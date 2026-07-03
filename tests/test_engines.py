@@ -38,7 +38,6 @@ def test_compile_video_logic(mock_exists, mock_image_clip, mock_audio_clip):
     # Mock image clip methods
     mock_image_instance = MagicMock()
     mock_image_instance.set_duration.return_value = mock_image_instance
-    mock_image_instance.resize.return_value = mock_image_instance
     mock_image_instance.set_audio.return_value = mock_image_instance
     mock_image_instance.duration = 5.0
     mock_image_clip.return_value = mock_image_instance
@@ -62,7 +61,13 @@ def test_compile_video_logic(mock_exists, mock_image_clip, mock_audio_clip):
     # Using another patch just to bypass actual moviepy compilation to speed up logic testing
     with patch("src.video_engine.concatenate_videoclips") as mock_concat, \
          patch("src.video_engine.volumex") as mock_volumex, \
-         patch("src.video_engine.CompositeAudioClip") as mock_composite:
+         patch("src.video_engine.CompositeAudioClip") as mock_composite, \
+         patch("src.video_engine.resize") as mock_resize, \
+         patch("src.video_engine.apply_zoom_effect") as mock_zoom:
+
+        # Configure resize and zoom mocks to return the chainable clip instance
+        mock_resize.return_value = mock_image_instance
+        mock_zoom.return_value = mock_image_instance
 
         mock_final_video = MagicMock()
         mock_final_video.duration = 5.0

@@ -1,6 +1,7 @@
 import os
 import logging
 from moviepy import ImageClip, AudioFileClip, CompositeAudioClip, concatenate_videoclips
+from moviepy.video.fx.Resize import Resize as resize
 from moviepy.audio.fx.MultiplyVolume import MultiplyVolume as volumex
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,9 @@ def compile_video(config, output_path="output.mp4"):
     """
     video_clips = []
 
+    canvas_format = config.get("canvas_format", "landscape")
+    target_resolution = (1080, 1920) if canvas_format == "portrait" else (1920, 1080)
+
     # 1. Process each scene
     for scene in config.get("scenes", []):
         seq = scene["sequence"]
@@ -52,6 +56,10 @@ def compile_video(config, output_path="output.mp4"):
 
         # Create visual clip matched to voice duration
         img_clip = ImageClip(image_file).set_duration(duration)
+
+        # Enforce canvas crop/resize metrics
+        # resize function scales the clip to the target width and height
+        img_clip = resize(img_clip, target_resolution)
 
         # Apply smooth scaling adjustment (Ken Burns effect)
         img_clip = apply_zoom_effect(img_clip)
@@ -90,11 +98,6 @@ def compile_video(config, output_path="output.mp4"):
         raise MissingAssetError(f"Background music missing: {music_path}")
 
     # 4. Render the final MP4 file
-    canvas = config.get("canvas_format", "landscape")
-    # For a real implementation, canvas would affect resize resolution,
-    # e.g., 1080x1920 for portrait, 1920x1080 for landscape.
-    # Assuming images are already correctly sized for simplicity here.
-
     final_video.write_videofile(
         output_path,
         fps=24,
