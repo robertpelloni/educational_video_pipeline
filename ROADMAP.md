@@ -17,7 +17,7 @@
 ### Phase 3: Content Ingestion Automation
 - [x] Connect the pipeline to public APIs (e.g. Wikipedia, Open Library) for raw text content gathering.
 - [x] Integrate local or hosted LLM endpoints to structure raw text into the `script.json` schema.
-- [ ] Interface with ComfyUI or Stable Diffusion WebUI API to generate the scene images automatically via prompts.
+- [x] Interface with ComfyUI or Stable Diffusion WebUI API to generate the scene images automatically via prompts.
 
 ### Phase 4: CI/CD, Containerization & Orchestration
 - [ ] Dockerize the entire application (`Dockerfile`, `docker-compose.yml`) ensuring FFmpeg and dependencies are cleanly packaged.
