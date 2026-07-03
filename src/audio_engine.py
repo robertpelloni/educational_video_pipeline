@@ -1,6 +1,9 @@
 import asyncio
 import os
+import logging
 import edge_tts
+
+logger = logging.getLogger(__name__)
 
 async def _generate_audio_async(text, output_path, voice="en-US-ChristopherNeural"):
     """
@@ -39,7 +42,7 @@ def generate_all_voiceovers(config):
         output_path = scene.get("voiceover_path")
 
         if not os.path.exists(output_path):
-            print(f"Generating voiceover for scene {scene.get('sequence')}...")
+            logger.info(f"Generating voiceover for scene {scene.get('sequence')}...")
             generate_voiceover(text, output_path)
         else:
-            print(f"Voiceover already exists for scene {scene.get('sequence')}: {output_path}")
+            logger.debug(f"Voiceover already exists for scene {scene.get('sequence')}: {output_path}")

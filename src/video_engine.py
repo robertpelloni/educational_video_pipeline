@@ -1,6 +1,9 @@
 import os
+import logging
 from moviepy import ImageClip, AudioFileClip, CompositeAudioClip, concatenate_videoclips
 from moviepy.audio.fx.MultiplyVolume import MultiplyVolume as volumex
+
+logger = logging.getLogger(__name__)
 
 class MissingAssetError(Exception):
     pass
@@ -98,6 +101,7 @@ def compile_video(config, output_path="output.mp4"):
         codec="libx264",
         audio_codec="aac",
         threads=4,
-        preset="ultrafast" # faster rendering for pipeline
+        preset="ultrafast", # faster rendering for pipeline
+        logger=None # Disable moviepy's internal progress bar logging for cleaner logs
     )
-    print(f"Video rendering complete: {output_path}")
+    logger.info(f"Video rendering complete: {output_path}")

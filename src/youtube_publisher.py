@@ -1,9 +1,12 @@
 import os
+import logging
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+
+logger = logging.getLogger(__name__)
 
 SCOPES = ['https://www.googleapis.com/auth/youtube.upload']
 
@@ -55,7 +58,7 @@ def upload_video(video_path, metadata):
         }
     }
 
-    print(f"Preparing to upload {video_path}...")
+    logger.info(f"Preparing to upload {video_path}...")
 
     # Ensure resumable=True for chunked transfers
     media = MediaFileUpload(video_path, chunksize=-1, resumable=True, mimetype='video/*')
@@ -70,7 +73,7 @@ def upload_video(video_path, metadata):
     while response is None:
         status, response = request.next_chunk()
         if status:
-            print(f"Upload Progress: {int(status.progress() * 100)}%")
+            logger.info(f"Upload Progress: {int(status.progress() * 100)}%")
 
-    print(f"Upload Successful! Video ID: {response['id']}")
+    logger.info(f"Upload Successful! Video ID: {response['id']}")
     return response['id']

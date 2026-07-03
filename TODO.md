@@ -13,11 +13,11 @@
 - [ ] **Linting & Formatting**: Integrate `flake8` or `black` for standardized codebase formatting and PEP8 adherence.
 
 ### CI/CD & Orchestration (Near-Term)
-- [ ] **GitHub Actions Setup**: Create `.github/workflows/tests.yml` to automatically run `pytest` upon PRs.
+- [x] **GitHub Actions Setup**: Create `.github/workflows/tests.yml` to automatically run `pytest` upon PRs.
 - [ ] **Logging Hooks**: Replace standard `print()` statements throughout the engines with the Python `logging` module. Configure different log levels (INFO, DEBUG, ERROR) to pipe logs to file storage or DataDog.
 - [ ] **Containerization**: Create an initial `Dockerfile` setting up Python 3.12, system dependencies (like FFmpeg headers), and copying `src/` to ensure isolated execution runs.
 
 ### Documentation Governance
-- [ ] Initialize `VISION.md` to break down the user-satisfaction design per the autonomy directive.
-- [ ] Initialize `DEPLOY.md` outlining API key procurement for local environments.
-- [ ] Initialize `CHANGELOG.md` to track global version string increments.
+- [x] Initialize `VISION.md` to break down the user-satisfaction design per the autonomy directive.
+- [x] Initialize `DEPLOY.md` outlining API key procurement for local environments.
+- [x] Initialize `CHANGELOG.md` to track global version string increments.

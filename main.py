@@ -1,4 +1,5 @@
 import argparse
+import logging
 import sys
 
 from src.config import load_config
@@ -7,6 +8,12 @@ from src.video_engine import compile_video
 from src.youtube_publisher import upload_video
 
 def main():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
+    logger = logging.getLogger(__name__)
+
     parser = argparse.ArgumentParser(description="Automated Video Generation and YouTube Publishing Pipeline.")
     parser.add_argument("--config", type=str, required=True, help="Path to the JSON job configuration file.")
     parser.add_argument("--output", type=str, default="final_video.mp4", help="Path to save the generated video.")
@@ -16,28 +23,28 @@ def main():
 
     try:
         # Step 1: Parse and validate configuration
-        print(f"Loading configuration from {args.config}...")
+        logger.info(f"Loading configuration from {args.config}...")
         config = load_config(args.config)
 
         # Step 2: Generate TTS audio clips
-        print("Checking and generating voiceovers...")
+        logger.info("Checking and generating voiceovers...")
         generate_all_voiceovers(config)
 
         # Step 3: Compile video
-        print("Compiling video...")
+        logger.info("Compiling video...")
         compile_video(config, output_path=args.output)
 
         # Step 4: Upload to YouTube (if not skipped)
         if not args.skip_upload:
-            print("Initiating YouTube upload...")
+            logger.info("Initiating YouTube upload...")
             upload_video(args.output, config.get("youtube_metadata", {}))
         else:
-            print("Skipping YouTube upload as requested.")
+            logger.info("Skipping YouTube upload as requested.")
 
-        print("Pipeline execution completed successfully.")
+        logger.info("Pipeline execution completed successfully.")
 
     except Exception as e:
-        print(f"Pipeline failed: {e}", file=sys.stderr)
+        logger.error(f"Pipeline failed: {e}", exc_info=True)
         sys.exit(1)
 
 if __name__ == "__main__":
