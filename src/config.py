@@ -7,7 +7,7 @@ SCHEMA = {
         "project_id": {"type": "string"},
         "canvas_format": {"type": "string", "enum": ["landscape", "portrait"]},
         "background_music": {"type": "string"},
-        "global_music_volume": {"type": "number"},
+        "global_music_volume_db": {"type": "number"},
         "scenes": {
             "type": "array",
             "items": {
@@ -35,7 +35,7 @@ SCHEMA = {
             "required": ["title", "description", "tags", "category_id"]
         }
     },
-    "required": ["project_id", "canvas_format", "background_music", "global_music_volume", "scenes", "youtube_metadata"]
+    "required": ["project_id", "canvas_format", "background_music", "global_music_volume_db", "scenes", "youtube_metadata"]
 }
 
 def load_config(file_path):

@@ -9,7 +9,7 @@ def test_valid_config(tmp_path):
         "project_id": "edu_anatomy_heart_001",
         "canvas_format": "landscape",
         "background_music": "assets/music/psytrance_track.mp3",
-        "global_music_volume": 0.12,
+        "global_music_volume_db": -18.0,
         "scenes": [
             {
                 "sequence": 1,
@@ -39,7 +39,7 @@ def test_missing_required_field(tmp_path):
         # missing scenes
         "canvas_format": "landscape",
         "background_music": "assets/music/psytrance_track.mp3",
-        "global_music_volume": 0.12,
+        "global_music_volume_db": -18.0,
         "youtube_metadata": {
             "title": "Heart",
             "description": "Desc",

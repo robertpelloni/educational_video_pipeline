@@ -7,7 +7,7 @@ def test_missing_image_raises_error(tmp_path):
         "project_id": "test",
         "canvas_format": "landscape",
         "background_music": "fake_music.mp3",
-        "global_music_volume": 0.12,
+        "global_music_volume_db": -18.0,
         "scenes": [
             {
                 "sequence": 1,
@@ -37,9 +37,9 @@ def test_compile_video_logic(mock_exists, mock_image_clip, mock_audio_clip):
 
     # Mock image clip methods
     mock_image_instance = MagicMock()
-    mock_image_instance.set_duration.return_value = mock_image_instance
+    mock_image_instance.with_duration.return_value = mock_image_instance
     mock_image_instance.resized.return_value = mock_image_instance
-    mock_image_instance.set_audio.return_value = mock_image_instance
+    mock_image_instance.with_audio.return_value = mock_image_instance
     mock_image_instance.duration = 5.0
     mock_image_clip.return_value = mock_image_instance
 
@@ -47,7 +47,7 @@ def test_compile_video_logic(mock_exists, mock_image_clip, mock_audio_clip):
         "project_id": "test",
         "canvas_format": "landscape",
         "background_music": "fake_music.mp3",
-        "global_music_volume": 0.15,
+            "global_music_volume_db": -16.478, # 10 ^ (-16.478/20) is approx 0.15
         "scenes": [
             {
                 "sequence": 1,
@@ -75,15 +75,15 @@ def test_compile_video_logic(mock_exists, mock_image_clip, mock_audio_clip):
         bg_music_mock = MagicMock()
         bg_music_mock.duration = 10.0
         bg_music_mock.with_effects.return_value = bg_music_mock
-        bg_music_mock.set_duration.return_value = bg_music_mock
+        bg_music_mock.with_duration.return_value = bg_music_mock
 
         # side_effect to return voiceover mock first, then bg music mock
         mock_audio_clip.side_effect = [mock_audio_instance, bg_music_mock]
 
-        # Test attenuation metrics checking if volumex gets called with 0.15
+        # Test attenuation metrics checking if volumex gets called with ~0.15 based on dB
         compile_video(config, "test_out.mp4")
 
-        # Verify MultiplyVolume is called with the target volume 0.15 on the background music
+        # Verify MultiplyVolume is called with the expected volume multiplier on the background music
         bg_music_mock.with_effects.assert_called()
         # Get all calls to with_effects
         calls = bg_music_mock.with_effects.call_args_list
@@ -92,7 +92,8 @@ def test_compile_video_logic(mock_exists, mock_image_clip, mock_audio_clip):
         # Let's inspect the latest call which should be MultiplyVolume
         latest_args = calls[-1][0]
         assert isinstance(latest_args[0][0], MultiplyVolume)
-        assert latest_args[0][0].factor == 0.15
+        # Check if the calculated multiplier is close to our expected 0.15
+        assert abs(latest_args[0][0].factor - 0.15) < 0.01
 
         # Verify track length is matched
-        mock_image_instance.set_duration.assert_called_with(5.0)
+        mock_image_instance.with_duration.assert_called_with(5.0)
