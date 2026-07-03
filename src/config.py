@@ -1,3 +1,4 @@
+import os
 import json
 import jsonschema
 
@@ -41,6 +42,8 @@ SCHEMA = {
 def load_config(file_path):
     """
     Loads and validates a job execution schema configuration file.
+    Also validates that all specified input image assets exist to prevent
+    mid-render failures.
 
     Args:
         file_path (str): The path to the configuration JSON file.
@@ -51,10 +54,17 @@ def load_config(file_path):
     Raises:
         json.JSONDecodeError: If the file is not valid JSON.
         jsonschema.ValidationError: If the JSON does not conform to the expected schema.
-        FileNotFoundError: If the file does not exist.
+        FileNotFoundError: If the config file or any required image assets do not exist.
     """
     with open(file_path, 'r', encoding='utf-8') as f:
         config = json.load(f)
 
     jsonschema.validate(instance=config, schema=SCHEMA)
+
+    # Asset validation check
+    for scene in config.get("scenes", []):
+        image_path = scene.get("image_path")
+        if image_path and not os.path.exists(image_path):
+            raise FileNotFoundError(f"Configuration error: Source image asset not found at '{image_path}' for scene {scene.get('sequence')}.")
+
     return config

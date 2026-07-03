@@ -8,9 +8,9 @@
 - [x] **Audio Mix Customization**: Abstract the hard-coded `0.15` and `0.12` ducking volumes into a mathematically sound decibel attenuation curve to prevent peaking.
 
 ### Testing & Quality Assurance
-- [ ] **Integration Tests**: Expand `tests/` with a full mock run of the `main.py` entrypoint.
-- [ ] **Asset Validation Check**: Ensure image bounds/aspect ratios are verified during the `config.py` schema checks.
-- [ ] **Linting & Formatting**: Integrate `flake8` or `black` for standardized codebase formatting and PEP8 adherence.
+- [x] **Integration Tests**: Expand `tests/` with a full mock run of the `main.py` entrypoint.
+- [x] **Asset Validation Check**: Ensure image bounds/aspect ratios are verified during the `config.py` schema checks.
+- [x] **Linting & Formatting**: Integrate `flake8` or `black` for standardized codebase formatting and PEP8 adherence.
 
 ### CI/CD & Orchestration (Near-Term)
 - [x] **GitHub Actions Setup**: Create `.github/workflows/tests.yml` to automatically run `pytest` upon PRs.

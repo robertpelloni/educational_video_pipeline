@@ -2,9 +2,13 @@ import pytest
 import json
 import os
 import jsonschema
+from unittest.mock import patch
 from src.config import load_config, SCHEMA
 
-def test_valid_config(tmp_path):
+@patch("src.config.os.path.exists")
+def test_valid_config(mock_exists, tmp_path):
+    mock_exists.return_value = True
+
     valid_data = {
         "project_id": "edu_anatomy_heart_001",
         "canvas_format": "landscape",
