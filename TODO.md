@@ -14,8 +14,8 @@
 
 ### CI/CD & Orchestration (Near-Term)
 - [x] **GitHub Actions Setup**: Create `.github/workflows/tests.yml` to automatically run `pytest` upon PRs.
-- [ ] **Logging Hooks**: Replace standard `print()` statements throughout the engines with the Python `logging` module. Configure different log levels (INFO, DEBUG, ERROR) to pipe logs to file storage or DataDog.
-- [ ] **Containerization**: Create an initial `Dockerfile` setting up Python 3.12, system dependencies (like FFmpeg headers), and copying `src/` to ensure isolated execution runs.
+- [x] **Logging Hooks**: Replace standard `print()` statements throughout the engines with the Python `logging` module. Configure different log levels (INFO, DEBUG, ERROR) to pipe logs to file storage or DataDog.
+- [x] **Containerization**: Create an initial `Dockerfile` setting up Python 3.12, system dependencies (like FFmpeg headers), and copying `src/` to ensure isolated execution runs.
 
 ### Documentation Governance
 - [x] Initialize `VISION.md` to break down the user-satisfaction design per the autonomy directive.
