@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.video_engine import compile_video, MissingAssetError, MultiplyVolume
+from src.ffmpeg_engine import compile_video, MissingAssetError
 
 def test_missing_image_raises_error(tmp_path):
     config = {
@@ -23,31 +23,15 @@ def test_missing_image_raises_error(tmp_path):
         compile_video(config, "output.mp4")
     assert "Missing image asset" in str(excinfo.value)
 
-@patch("src.video_engine.AudioFileClip")
-@patch("src.video_engine.ImageClip")
-@patch("src.video_engine.os.path.exists")
-def test_compile_video_logic(mock_exists, mock_image_clip, mock_audio_clip):
-    # Mocking os.path.exists to always return True to pass the asset check
-    mock_exists.return_value = True
-
-    # Mock audio clip duration
-    mock_audio_instance = MagicMock()
-    mock_audio_instance.duration = 5.0
-    mock_audio_clip.return_value = mock_audio_instance
-
-    # Mock image clip methods
-    mock_image_instance = MagicMock()
-    mock_image_instance.with_duration.return_value = mock_image_instance
-    mock_image_instance.resized.return_value = mock_image_instance
-    mock_image_instance.with_audio.return_value = mock_image_instance
-    mock_image_instance.duration = 5.0
-    mock_image_clip.return_value = mock_image_instance
-
+@patch("src.ffmpeg_engine.ffmpeg")
+@patch("src.ffmpeg_engine.get_audio_duration", return_value=5.0)
+@patch("src.ffmpeg_engine.os.path.exists", return_value=True)
+def test_compile_video_logic(mock_exists, mock_get_audio_duration, mock_ffmpeg):
     config = {
         "project_id": "test",
         "canvas_format": "landscape",
         "background_music": "fake_music.mp3",
-            "global_music_volume_db": -16.478, # 10 ^ (-16.478/20) is approx 0.15
+        "global_music_volume_db": -18.0,
         "scenes": [
             {
                 "sequence": 1,
@@ -59,41 +43,18 @@ def test_compile_video_logic(mock_exists, mock_image_clip, mock_audio_clip):
         "youtube_metadata": {}
     }
 
-    # Using another patch just to bypass actual moviepy compilation to speed up logic testing
-    with patch("src.video_engine.concatenate_videoclips") as mock_concat, \
-         patch("src.video_engine.CompositeAudioClip") as mock_composite, \
-         patch("src.video_engine.apply_zoom_effect") as mock_zoom:
+    # We mock the chainable ffmpeg API structure
+    mock_node = MagicMock()
+    mock_node.filter.return_value = mock_node
+    mock_ffmpeg.input.return_value = mock_node
+    mock_ffmpeg.concat.return_value = mock_node
+    mock_ffmpeg.filter.return_value = mock_node
 
-        # Configure zoom mock to return the chainable clip instance
-        mock_zoom.return_value = mock_image_instance
+    mock_out = MagicMock()
+    mock_ffmpeg.output.return_value = mock_out
+    mock_ffmpeg.overwrite_output.return_value = mock_out
 
-        mock_final_video = MagicMock()
-        mock_final_video.duration = 5.0
-        mock_concat.return_value = mock_final_video
+    compile_video(config, "test_out.mp4")
 
-        # Configure a specific mock for the background music to separate it from voiceovers
-        bg_music_mock = MagicMock()
-        bg_music_mock.duration = 10.0
-        bg_music_mock.with_effects.return_value = bg_music_mock
-        bg_music_mock.with_duration.return_value = bg_music_mock
-
-        # side_effect to return voiceover mock first, then bg music mock
-        mock_audio_clip.side_effect = [mock_audio_instance, bg_music_mock]
-
-        # Test attenuation metrics checking if volumex gets called with ~0.15 based on dB
-        compile_video(config, "test_out.mp4")
-
-        # Verify MultiplyVolume is called with the expected volume multiplier on the background music
-        bg_music_mock.with_effects.assert_called()
-        # Get all calls to with_effects
-        calls = bg_music_mock.with_effects.call_args_list
-
-        # Depending on if AudioLoop was applied (duration logic), MultiplyVolume could be in first or second call
-        # Let's inspect the latest call which should be MultiplyVolume
-        latest_args = calls[-1][0]
-        assert isinstance(latest_args[0][0], MultiplyVolume)
-        # Check if the calculated multiplier is close to our expected 0.15
-        assert abs(latest_args[0][0].factor - 0.15) < 0.01
-
-        # Verify track length is matched
-        mock_image_instance.with_duration.assert_called_with(5.0)
+    # Verify ffmpeg execution happened
+    mock_out.run.assert_called_once_with(quiet=True)

@@ -9,7 +9,7 @@
 - [x] Resumable chunked uploads to YouTube Data API v3.
 
 ### Phase 2: Enhanced Rendering & Animation
-- [ ] Transition from CPU-bound `moviepy` rendering to a hardware-accelerated pipeline (e.g. raw `ffmpeg` via bindings or `ffmpeg-python`) to speed up execution.
+- [x] Transition from CPU-bound `moviepy` rendering to a hardware-accelerated pipeline (e.g. raw `ffmpeg` via bindings or `ffmpeg-python`) to speed up execution.
 - [ ] Introduce advanced transitions between scene boundaries (fade, cross-dissolve, swipe).
 - [ ] Support overlaying generated `.srt`/`.vtt` captions onto the video in real-time.
 - [ ] Create multi-layout rendering outputs concurrently (1080x1920 for YouTube Shorts / TikTok vs. 1920x1080 for standard YouTube).

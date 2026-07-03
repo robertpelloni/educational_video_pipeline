@@ -7,7 +7,7 @@ import jsonschema
 
 from src.config import load_config, SCHEMA
 from src.audio_engine import generate_all_voiceovers
-from src.video_engine import compile_video
+from src.ffmpeg_engine import compile_video
 from src.youtube_publisher import upload_video
 from src.ingestion_engine import fetch_wikipedia_summary
 from src.llm_engine import generate_script_from_text

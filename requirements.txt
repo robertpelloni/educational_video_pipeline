@@ -6,3 +6,4 @@ pytest
 jsonschema
 flake8
 black
+ffmpeg-python
