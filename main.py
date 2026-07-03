@@ -2,10 +2,16 @@ import argparse
 import logging
 import sys
 
-from src.config import load_config
+import os
+import jsonschema
+
+from src.config import load_config, SCHEMA
 from src.audio_engine import generate_all_voiceovers
 from src.video_engine import compile_video
 from src.youtube_publisher import upload_video
+from src.ingestion_engine import fetch_wikipedia_summary
+from src.llm_engine import generate_script_from_text
+from src.image_engine import generate_image_from_prompt
 
 def main():
     logging.basicConfig(
@@ -15,16 +21,40 @@ def main():
     logger = logging.getLogger(__name__)
 
     parser = argparse.ArgumentParser(description="Automated Video Generation and YouTube Publishing Pipeline.")
-    parser.add_argument("--config", type=str, required=True, help="Path to the JSON job configuration file.")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--config", type=str, help="Path to a JSON job configuration file.")
+    group.add_argument("--topic", type=str, help="A topic to generate a video about automatically via Wikipedia.")
+
     parser.add_argument("--output", type=str, default="final_video.mp4", help="Path to save the generated video.")
     parser.add_argument("--skip-upload", action="store_true", help="Skip the YouTube upload step.")
 
     args = parser.parse_args()
 
     try:
-        # Step 1: Parse and validate configuration
-        logger.info(f"Loading configuration from {args.config}...")
-        config = load_config(args.config)
+        if args.topic:
+            logger.info(f"Initiating autonomous end-to-end generation for topic: '{args.topic}'")
+
+            # 1a. Ingestion
+            raw_text = fetch_wikipedia_summary(args.topic)
+
+            # 1b. LLM Structure
+            project_id = args.topic.lower().replace(" ", "_")
+            config = generate_script_from_text(raw_text, project_id=project_id)
+            jsonschema.validate(instance=config, schema=SCHEMA)
+
+            # 1c. Image Generation
+            logger.info("Generating visual assets...")
+            for scene in config.get("scenes", []):
+                image_path = scene.get("image_path")
+                if image_path and not os.path.exists(image_path):
+                    # We use a simple prompt derived from the scene text for the image generator
+                    prompt = f"Educational illustration regarding: {scene.get('text')}"
+                    generate_image_from_prompt(prompt, image_path)
+
+        else:
+            # Step 1: Parse and validate explicit file configuration
+            logger.info(f"Loading configuration from {args.config}...")
+            config = load_config(args.config)
 
         # Step 2: Generate TTS audio clips
         logger.info("Checking and generating voiceovers...")
