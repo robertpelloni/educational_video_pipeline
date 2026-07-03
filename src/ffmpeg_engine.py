@@ -5,17 +5,20 @@ import ffmpeg
 
 logger = logging.getLogger(__name__)
 
+
 class MissingAssetError(Exception):
     pass
+
 
 def get_audio_duration(file_path: str) -> float:
     """Helper to extract audio duration using ffprobe."""
     try:
         probe = ffmpeg.probe(file_path)
-        return float(probe['format']['duration'])
+        return float(probe["format"]["duration"])
     except ffmpeg.Error as e:
         logger.error(f"ffprobe error: {e.stderr.decode('utf-8')}")
         raise ValueError(f"Failed to probe audio duration for {file_path}")
+
 
 def compile_video(config: dict, output_path: str = "output.mp4"):
     """
@@ -39,23 +42,35 @@ def compile_video(config: dict, output_path: str = "output.mp4"):
 
         # Absolute runtime safety checks
         if not os.path.exists(image_file):
-            raise MissingAssetError(f"Missing image asset for scene {seq}: {image_file}")
+            raise MissingAssetError(
+                f"Missing image asset for scene {seq}: {image_file}"
+            )
         if not os.path.exists(audio_file):
-            raise MissingAssetError(f"Missing audio asset for scene {seq}: {audio_file}")
+            raise MissingAssetError(
+                f"Missing audio asset for scene {seq}: {audio_file}"
+            )
 
         # Get exact duration of speech
         duration = get_audio_duration(audio_file)
 
         # Video: Input image, loop for duration, scale/crop, apply basic "zoom" pan effect
-        # Ken Burns effect in raw ffmpeg is complex using `zoompan`, but achievable
-        zoom_filter = f"zoompan=z='min(zoom+0.001,1.04)':d={math.ceil(duration*24)}:s={target_w}x{target_h}"
-
+        # zoompan generates frames internally, so we don't loop the input image
         v_stream = (
-            ffmpeg.input(image_file, loop=1, t=duration)
-            .filter('scale', w=f'max(iw,ih*({target_w}/{target_h}))', h=f'max(ih,iw*({target_h}/{target_w}))')
-            .filter('crop', w=target_w, h=target_h)
-            .filter('zoompan', z='min(zoom+0.001,1.04)', d=math.ceil(duration*24), s=f'{target_w}x{target_h}', fps=24)
-            .filter('setsar', '1') # Ensure square pixels
+            ffmpeg.input(image_file)
+            .filter(
+                "scale",
+                w=f"max(iw,ih*({target_w}/{target_h}))",
+                h=f"max(ih,iw*({target_h}/{target_w}))",
+            )
+            .filter("crop", w=target_w, h=target_h)
+            .filter(
+                "zoompan",
+                z="min(zoom+0.001,1.04)",
+                d=math.ceil(duration * 24),
+                s=f"{target_w}x{target_h}",
+                fps=24,
+            )
+            .filter("setsar", "1")  # Ensure square pixels
         )
 
         # Audio: Input voiceover
@@ -77,17 +92,18 @@ def compile_video(config: dict, output_path: str = "output.mp4"):
         target_db = config.get("global_music_volume_db", -18.0)
 
         # Input background music, loop infinitely if short, and apply volume
-        bg_audio = (
-            ffmpeg.input(music_path, stream_loop=-1)
-            .filter('volume', f'{target_db}dB')
+        bg_audio = ffmpeg.input(music_path, stream_loop=-1).filter(
+            "volume", f"{target_db}dB"
         )
 
         # Mix the voiceovers and background music together
         # amix automatically drops to the shortest input if we use duration='first'
-        final_audio = ffmpeg.filter([joined_audio, bg_audio], 'amix', inputs=2, duration='first')
-    elif music_path:
-        raise MissingAssetError(f"Background music missing: {music_path}")
+        final_audio = ffmpeg.filter(
+            [joined_audio, bg_audio], "amix", inputs=2, duration="first"
+        )
     else:
+        if music_path:
+            logger.warning(f"Background music missing: {music_path}. Continuing without ducking.")
         final_audio = joined_audio
 
     # 4. Render the final MP4 file
@@ -98,16 +114,16 @@ def compile_video(config: dict, output_path: str = "output.mp4"):
             joined_video,
             final_audio,
             output_path,
-            vcodec='libx264',
-            acodec='aac',
-            preset='ultrafast',
-            r=24, # framerate
-            pix_fmt='yuv420p',
-            shortest=None # end when shortest stream ends (the video/voiceover track)
+            vcodec="libx264",
+            acodec="aac",
+            preset="ultrafast",
+            r=24,  # framerate
+            pix_fmt="yuv420p",
+            shortest=None,  # end when shortest stream ends (the video/voiceover track)
         )
         # overwrite output
         out = ffmpeg.overwrite_output(out)
-        out.run(quiet=True) # quiet=True hides ffmpeg spam, raising errors cleanly
+        out.run(quiet=True)  # quiet=True hides ffmpeg spam, raising errors cleanly
         logger.info(f"Video rendering complete: {output_path}")
     except ffmpeg.Error as e:
         logger.error(f"FFmpeg render failed: {e.stderr.decode('utf-8')}")

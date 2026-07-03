@@ -5,6 +5,7 @@ import json
 
 logger = logging.getLogger(__name__)
 
+
 def fetch_wikipedia_summary(query: str, lang: str = "en") -> str:
     """
     Fetches the plain text summary for a given topic from the Wikipedia REST API.
@@ -35,20 +36,22 @@ def fetch_wikipedia_summary(query: str, lang: str = "en") -> str:
     req = urllib.request.Request(
         url,
         headers={
-            'User-Agent': 'AutomatedVideoPipeline/0.1.0 (https://github.com/robertpelloni)'
-        }
+            "User-Agent": "AutomatedVideoPipeline/0.1.0 (https://github.com/robertpelloni)"
+        },
     )
 
     try:
         with urllib.request.urlopen(req) as response:
-            data = json.loads(response.read().decode('utf-8'))
+            data = json.loads(response.read().decode("utf-8"))
 
             # The API returns 'extract' which is the plain-text summary
-            if 'extract' in data:
+            if "extract" in data:
                 logger.debug("Successfully extracted Wikipedia summary.")
-                return data['extract']
+                return data["extract"]
             else:
-                logger.error("The Wikipedia API response did not contain an 'extract' field.")
+                logger.error(
+                    "The Wikipedia API response did not contain an 'extract' field."
+                )
                 raise ValueError("No text extract found for the given query.")
 
     except urllib.error.HTTPError as e:

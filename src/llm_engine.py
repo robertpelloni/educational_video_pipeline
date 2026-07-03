@@ -2,6 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def generate_script_from_text(raw_text: str, project_id: str = "auto_gen_001") -> dict:
     """
     Simulates an LLM endpoint that takes raw ingestion text and formats it
@@ -25,7 +26,7 @@ def generate_script_from_text(raw_text: str, project_id: str = "auto_gen_001") -
 
     # Split the raw text into logical "scenes" (mocking LLM summarization logic)
     # For this stub, we'll just split by sentences (periods)
-    sentences = [s.strip() + "." for s in raw_text.split('.') if len(s.strip()) > 10]
+    sentences = [s.strip() + "." for s in raw_text.split(".") if len(s.strip()) > 10]
 
     if not sentences:
         # Fallback if no clean sentences were found
@@ -35,12 +36,14 @@ def generate_script_from_text(raw_text: str, project_id: str = "auto_gen_001") -
     for index, sentence in enumerate(sentences, start=1):
         # We assign dummy image/audio paths which the orchestrator will generate
         # or which the user must provide.
-        scenes.append({
-            "sequence": index,
-            "text": sentence,
-            "image_path": f"assets/images/{project_id}_scene_{index}.png",
-            "voiceover_path": f"assets/audio/{project_id}_scene_{index}.mp3"
-        })
+        scenes.append(
+            {
+                "sequence": index,
+                "text": sentence,
+                "image_path": f"assets/images/{project_id}_scene_{index}.png",
+                "voiceover_path": f"assets/audio/{project_id}_scene_{index}.mp3",
+            }
+        )
 
     # Assemble the final schema dictionary
     script_config = {
@@ -53,8 +56,8 @@ def generate_script_from_text(raw_text: str, project_id: str = "auto_gen_001") -
             "title": f"Automated Educational Video: {project_id}",
             "description": "Generated autonomously from public domain text.",
             "tags": ["education", "automated", "science"],
-            "category_id": "27"
-        }
+            "category_id": "27",
+        },
     }
 
     logger.debug("Successfully generated mock script config.")

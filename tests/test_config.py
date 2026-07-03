@@ -1,9 +1,9 @@
 import pytest
 import json
-import os
 import jsonschema
 from unittest.mock import patch
-from src.config import load_config, SCHEMA
+from src.config import load_config
+
 
 @patch("src.config.os.path.exists")
 def test_valid_config(mock_exists, tmp_path):
@@ -19,15 +19,15 @@ def test_valid_config(mock_exists, tmp_path):
                 "sequence": 1,
                 "text": "The human heart beats...",
                 "image_path": "assets/images/scene_1.png",
-                "voiceover_path": "assets/audio/scene_1.mp3"
+                "voiceover_path": "assets/audio/scene_1.mp3",
             }
         ],
         "youtube_metadata": {
             "title": "Heart",
             "description": "Desc",
             "tags": ["sci"],
-            "category_id": "27"
-        }
+            "category_id": "27",
+        },
     }
 
     file_path = tmp_path / "config.json"
@@ -36,6 +36,7 @@ def test_valid_config(mock_exists, tmp_path):
 
     config = load_config(file_path)
     assert config["project_id"] == "edu_anatomy_heart_001"
+
 
 def test_missing_required_field(tmp_path):
     invalid_data = {
@@ -48,8 +49,8 @@ def test_missing_required_field(tmp_path):
             "title": "Heart",
             "description": "Desc",
             "tags": ["sci"],
-            "category_id": "27"
-        }
+            "category_id": "27",
+        },
     }
 
     file_path = tmp_path / "config.json"

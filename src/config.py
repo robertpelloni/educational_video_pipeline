@@ -17,27 +17,32 @@ SCHEMA = {
                     "sequence": {"type": "integer"},
                     "text": {"type": "string"},
                     "image_path": {"type": "string"},
-                    "voiceover_path": {"type": "string"}
+                    "voiceover_path": {"type": "string"},
                 },
-                "required": ["sequence", "text", "image_path", "voiceover_path"]
-            }
+                "required": ["sequence", "text", "image_path", "voiceover_path"],
+            },
         },
         "youtube_metadata": {
             "type": "object",
             "properties": {
                 "title": {"type": "string"},
                 "description": {"type": "string"},
-                "tags": {
-                    "type": "array",
-                    "items": {"type": "string"}
-                },
-                "category_id": {"type": "string"}
+                "tags": {"type": "array", "items": {"type": "string"}},
+                "category_id": {"type": "string"},
             },
-            "required": ["title", "description", "tags", "category_id"]
-        }
+            "required": ["title", "description", "tags", "category_id"],
+        },
     },
-    "required": ["project_id", "canvas_format", "background_music", "global_music_volume_db", "scenes", "youtube_metadata"]
+    "required": [
+        "project_id",
+        "canvas_format",
+        "background_music",
+        "global_music_volume_db",
+        "scenes",
+        "youtube_metadata",
+    ],
 }
+
 
 def load_config(file_path):
     """
@@ -58,21 +63,26 @@ def load_config(file_path):
     """
     config_dir = os.path.dirname(os.path.abspath(file_path))
 
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         config = json.load(f)
 
     jsonschema.validate(instance=config, schema=SCHEMA)
 
     # Dynamically resolve background music
     if config.get("background_music"):
-        config["background_music"] = os.path.join(config_dir, config["background_music"])
+        config["background_music"] = os.path.join(
+            config_dir, config["background_music"]
+        )
 
     # Asset validation check and dynamic path resolution
     for scene in config.get("scenes", []):
         if scene.get("image_path"):
             scene["image_path"] = os.path.join(config_dir, scene["image_path"])
             if not os.path.exists(scene["image_path"]):
-                raise FileNotFoundError(f"Configuration error: Source image asset not found at '{scene['image_path']}' for scene {scene.get('sequence')}.")
+                raise FileNotFoundError(
+                    f"Configuration error: Source image asset not found at "
+                    f"'{scene['image_path']}' for scene {scene.get('sequence')}."
+                )
 
         if scene.get("voiceover_path"):
             scene["voiceover_path"] = os.path.join(config_dir, scene["voiceover_path"])

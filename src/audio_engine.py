@@ -5,6 +5,7 @@ import edge_tts
 
 logger = logging.getLogger(__name__)
 
+
 async def _generate_audio_async(text, output_path, voice="en-US-ChristopherNeural"):
     """
     Asynchronously generates TTS audio from text using edge-tts.
@@ -29,6 +30,7 @@ async def _generate_audio_async(text, output_path, voice="en-US-ChristopherNeura
     with open(srt_output_path, "w", encoding="utf-8") as file:
         file.write(sub_maker.get_srt())
 
+
 def generate_voiceover(text, output_path, voice="en-US-ChristopherNeural"):
     """
     Synchronous wrapper to generate TTS audio from text using edge-tts.
@@ -41,6 +43,7 @@ def generate_voiceover(text, output_path, voice="en-US-ChristopherNeural"):
     """
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     asyncio.run(_generate_audio_async(text, output_path, voice))
+
 
 def generate_all_voiceovers(config):
     """
@@ -57,4 +60,6 @@ def generate_all_voiceovers(config):
             logger.info(f"Generating voiceover for scene {scene.get('sequence')}...")
             generate_voiceover(text, output_path)
         else:
-            logger.debug(f"Voiceover already exists for scene {scene.get('sequence')}: {output_path}")
+            logger.debug(
+                f"Voiceover already exists for scene {scene.get('sequence')}: {output_path}"
+            )

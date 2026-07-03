@@ -13,26 +13,43 @@ from src.ingestion_engine import fetch_wikipedia_summary
 from src.llm_engine import generate_script_from_text
 from src.image_engine import generate_image_from_prompt
 
+
 def main():
     logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+        level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     )
     logger = logging.getLogger(__name__)
 
-    parser = argparse.ArgumentParser(description="Automated Video Generation and YouTube Publishing Pipeline.")
+    parser = argparse.ArgumentParser(
+        description="Automated Video Generation and YouTube Publishing Pipeline."
+    )
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--config", type=str, help="Path to a JSON job configuration file.")
-    group.add_argument("--topic", type=str, help="A topic to generate a video about automatically via Wikipedia.")
+    group.add_argument(
+        "--config", type=str, help="Path to a JSON job configuration file."
+    )
+    group.add_argument(
+        "--topic",
+        type=str,
+        help="A topic to generate a video about automatically via Wikipedia.",
+    )
 
-    parser.add_argument("--output", type=str, default="final_video.mp4", help="Path to save the generated video.")
-    parser.add_argument("--skip-upload", action="store_true", help="Skip the YouTube upload step.")
+    parser.add_argument(
+        "--output",
+        type=str,
+        default="final_video.mp4",
+        help="Path to save the generated video.",
+    )
+    parser.add_argument(
+        "--skip-upload", action="store_true", help="Skip the YouTube upload step."
+    )
 
     args = parser.parse_args()
 
     try:
         if args.topic:
-            logger.info(f"Initiating autonomous end-to-end generation for topic: '{args.topic}'")
+            logger.info(
+                f"Initiating autonomous end-to-end generation for topic: '{args.topic}'"
+            )
 
             # 1a. Ingestion
             raw_text = fetch_wikipedia_summary(args.topic)
@@ -76,6 +93,7 @@ def main():
     except Exception as e:
         logger.error(f"Pipeline failed: {e}", exc_info=True)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
