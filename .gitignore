@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+.pytest_cache/
+client_secrets.json
+token.json
+output.mp4
+final_video.mp4
