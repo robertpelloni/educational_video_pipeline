@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 async def _generate_audio_async(text, output_path, voice="en-US-ChristopherNeural"):
     """
     Asynchronously generates TTS audio from text using edge-tts.
+    Also generates a corresponding .srt subtitle file.
 
     Args:
         text (str): The text to synthesize.
@@ -15,7 +16,18 @@ async def _generate_audio_async(text, output_path, voice="en-US-ChristopherNeura
         voice (str): The voice model to use.
     """
     communicate = edge_tts.Communicate(text, voice)
-    await communicate.save(output_path)
+
+    sub_maker = edge_tts.SubMaker()
+    with open(output_path, "wb") as file:
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                file.write(chunk["data"])
+            elif chunk["type"] == "WordBoundary":
+                sub_maker.feed(chunk)
+
+    srt_output_path = os.path.splitext(output_path)[0] + ".srt"
+    with open(srt_output_path, "w", encoding="utf-8") as file:
+        file.write(sub_maker.get_srt())
 
 def generate_voiceover(text, output_path, voice="en-US-ChristopherNeural"):
     """

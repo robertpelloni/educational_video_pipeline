@@ -3,7 +3,7 @@
 ## Immediate Action Items
 
 ### Code Refactoring & Logic Expansion
-- [ ] **Caption Generation**: Generate text subtitles (`.srt` files) natively alongside the TTS output to pass to YouTube, or bake them visually into the video feed.
+- [x] **Caption Generation**: Generate text subtitles (`.srt` files) natively alongside the TTS output to pass to YouTube, or bake them visually into the video feed.
 - [x] **Canvas Layout Fix**: Update `video_engine.py` to enforce crop/resize metrics depending on `canvas_format` (portrait vs landscape) instead of relying on the source image size directly.
 - [ ] **Audio Mix Customization**: Abstract the hard-coded `0.15` and `0.12` ducking volumes into a mathematically sound decibel attenuation curve to prevent peaking.
 

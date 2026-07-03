@@ -1,8 +1,7 @@
 import os
 import logging
 from moviepy import ImageClip, AudioFileClip, CompositeAudioClip, concatenate_videoclips
-from moviepy.video.fx.Resize import Resize as resize
-from moviepy.audio.fx.MultiplyVolume import MultiplyVolume as volumex
+from moviepy.audio.fx.MultiplyVolume import MultiplyVolume
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +57,7 @@ def compile_video(config, output_path="output.mp4"):
         img_clip = ImageClip(image_file).set_duration(duration)
 
         # Enforce canvas crop/resize metrics
-        # resize function scales the clip to the target width and height
-        img_clip = resize(img_clip, target_resolution)
+        img_clip = img_clip.resized(target_resolution)
 
         # Apply smooth scaling adjustment (Ken Burns effect)
         img_clip = apply_zoom_effect(img_clip)
@@ -82,14 +80,14 @@ def compile_video(config, output_path="output.mp4"):
 
         # Loop music if shorter than video, or cut if longer
         if bg_music.duration < final_video.duration:
-            from moviepy.audio.fx.audio_loop import audio_loop
-            bg_music = audio_loop(bg_music, duration=final_video.duration)
+            from moviepy.audio.fx.AudioLoop import AudioLoop
+            bg_music = bg_music.with_effects([AudioLoop(duration=final_video.duration)])
         else:
             bg_music = bg_music.set_duration(final_video.duration)
 
         # Volume attenuation (Ducking)
         target_volume = config.get("global_music_volume", 0.12)
-        bg_music = volumex(bg_music, target_volume)
+        bg_music = bg_music.with_effects([MultiplyVolume(target_volume)])
 
         # Combine the original video audio (voiceovers) with the background music
         combined_audio = CompositeAudioClip([final_video.audio, bg_music])
