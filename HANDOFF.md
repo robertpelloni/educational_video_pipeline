@@ -19,6 +19,7 @@ We have successfully built the foundation for an **Automated Educational Video C
 - **YouTube Headless Upload:** Implementation of chunked resumable file transfers to the YouTube Data API v3 (`resumable=True`).
 - **QA & Testing:** Complete unit and integration testing via `pytest` (including heavy `--topic` logic mocks). CI/CD implemented via GitHub Actions. Asset boundary checking implemented.
 - **Containerization:** Built a lightweight `python:3.12-slim` Docker image loaded with system `ffmpeg` binaries to standardize deployments.
+- **Frontend UI:** Initialized a React application in `/frontend` providing an interactive UI to manually trigger topic queries and preview output videos dynamically.
 - **Documentation Complete:** Established `ROADMAP.md`, `TODO.md`, `VISION.md`, `DEPLOY.md`, `CHANGELOG.md`, and `VERSION.md`. Linter (`flake8`) initialized.
 
 ## Architectural Notes & "Gotchas" (System Memories)
@@ -29,6 +30,6 @@ We have successfully built the foundation for an **Automated Educational Video C
 ## Next Steps for Successor Model
 1. Parse the `ROADMAP.md`. Phase 1 and Phase 3 are now fully complete.
 2. The logical next sequence (Phase 2) revolves around transitioning away from CPU-bound `moviepy` rendering to a hardware-accelerated pipeline (`ffmpeg-python` or direct binary calls) to heavily speed up execution.
-3. Review Phase 4 (CI/CD): We have basic testing and containerization, but Kubernetes deployment and the React-based preview frontend remain unbuilt.
+3. Review Phase 4 (CI/CD): We have basic testing, containerization, and a React frontend, but backend API routing (connecting the React app directly to `main.py`) and Kubernetes deployment remain unbuilt.
 
 Resume executing recommendations sequentially and autonomously based on the `ROADMAP.md`!

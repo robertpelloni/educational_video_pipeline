@@ -42,29 +42,39 @@ SCHEMA = {
 def load_config(file_path):
     """
     Loads and validates a job execution schema configuration file.
-    Also validates that all specified input image assets exist to prevent
-    mid-render failures.
+    Dynamically resolves relative paths in the configuration relative to
+    the directory containing the configuration file itself.
 
     Args:
         file_path (str): The path to the configuration JSON file.
 
     Returns:
-        dict: The parsed and validated configuration.
+        dict: The parsed and validated configuration with absolute paths.
 
     Raises:
         json.JSONDecodeError: If the file is not valid JSON.
         jsonschema.ValidationError: If the JSON does not conform to the expected schema.
         FileNotFoundError: If the config file or any required image assets do not exist.
     """
+    config_dir = os.path.dirname(os.path.abspath(file_path))
+
     with open(file_path, 'r', encoding='utf-8') as f:
         config = json.load(f)
 
     jsonschema.validate(instance=config, schema=SCHEMA)
 
-    # Asset validation check
+    # Dynamically resolve background music
+    if config.get("background_music"):
+        config["background_music"] = os.path.join(config_dir, config["background_music"])
+
+    # Asset validation check and dynamic path resolution
     for scene in config.get("scenes", []):
-        image_path = scene.get("image_path")
-        if image_path and not os.path.exists(image_path):
-            raise FileNotFoundError(f"Configuration error: Source image asset not found at '{image_path}' for scene {scene.get('sequence')}.")
+        if scene.get("image_path"):
+            scene["image_path"] = os.path.join(config_dir, scene["image_path"])
+            if not os.path.exists(scene["image_path"]):
+                raise FileNotFoundError(f"Configuration error: Source image asset not found at '{scene['image_path']}' for scene {scene.get('sequence')}.")
+
+        if scene.get("voiceover_path"):
+            scene["voiceover_path"] = os.path.join(config_dir, scene["voiceover_path"])
 
     return config

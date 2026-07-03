@@ -20,9 +20,9 @@
 - [x] Interface with ComfyUI or Stable Diffusion WebUI API to generate the scene images automatically via prompts.
 
 ### Phase 4: CI/CD, Containerization & Orchestration
-- [ ] Dockerize the entire application (`Dockerfile`, `docker-compose.yml`) ensuring FFmpeg and dependencies are cleanly packaged.
+- [x] Dockerize the entire application (`Dockerfile`, `docker-compose.yml`) ensuring FFmpeg and dependencies are cleanly packaged.
 - [ ] Deploy via Kubernetes or asynchronous queue managers (like Celery/RabbitMQ) for batch video processing at scale.
-- [ ] Build a React-based interactive web frontend for previewing generated videos before triggering the YouTube publisher.
+- [x] Build a React-based interactive web frontend for previewing generated videos before triggering the YouTube publisher.
 
 ### Phase 5: Multi-Platform Syndication
 - [ ] Expand publisher engines to support TikTok, Instagram Reels, and X (Twitter) natively.
