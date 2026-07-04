@@ -23,6 +23,7 @@
 - [x] Dockerize the entire application (`Dockerfile`, `docker-compose.yml`) ensuring FFmpeg and dependencies are cleanly packaged.
 - [ ] Deploy via Kubernetes or asynchronous queue managers (like Celery/RabbitMQ) for batch video processing at scale.
 - [x] Build a React-based interactive web frontend for previewing generated videos before triggering the YouTube publisher.
+- [x] Implement backend routing (`FastAPI`) to expose pipeline orchestration to the frontend UI.
 
 ### Phase 5: Multi-Platform Syndication
 - [ ] Expand publisher engines to support TikTok, Instagram Reels, and X (Twitter) natively.

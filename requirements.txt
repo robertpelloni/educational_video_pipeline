@@ -7,3 +7,6 @@ jsonschema
 flake8
 black
 ffmpeg-python
+fastapi
+uvicorn
+httpx
