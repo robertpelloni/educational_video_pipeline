@@ -23,13 +23,15 @@ def test_generate_video_endpoint_unauthorized():
 def test_generate_video_endpoint_success():
     payload = {"topic": "Black hole", "skip_upload": True}
 
-    with patch("src.api_router.BackgroundTasks.add_task") as mock_add_task:
+    with patch("src.api_router.run_pipeline_task.delay") as mock_delay:
+        mock_delay.return_value.id = "test-task-id-123"
         response = client.post("/generate", json=payload, headers=auth_headers)
 
         assert response.status_code == 200
         assert response.json()["status"] == "success"
         assert response.json()["topic"] == "Black hole"
-        mock_add_task.assert_called_once()
+        assert response.json()["task_id"] == "test-task-id-123"
+        mock_delay.assert_called_once_with("Black hole", True)
 
 
 @patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})

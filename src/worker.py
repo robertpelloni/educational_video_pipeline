@@ -1,0 +1,71 @@
+import os
+import jsonschema
+import logging
+import re
+from celery import Celery
+
+from src.config import SCHEMA
+from src.audio_engine import generate_all_voiceovers
+from src.ffmpeg_engine import compile_video
+from src.youtube_publisher import upload_video
+from src.ingestion_engine import fetch_wikipedia_summary
+from src.llm_engine import generate_script_from_text
+from src.image_engine import generate_image_from_prompt
+
+logger = logging.getLogger(__name__)
+
+# Configure Celery to use Redis (defaults to localhost:6379, typical for Docker setups)
+redis_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+
+celery_app = Celery(
+    "video_pipeline",
+    broker=redis_url,
+    backend=redis_url
+)
+
+@celery_app.task(name="run_video_pipeline_task")
+def run_pipeline_task(topic: str, skip_upload: bool):
+    """
+    Executes the end-to-end video pipeline as a distributed Celery task.
+    """
+    logger.info(f"Celery Task: Initiating autonomous end-to-end generation for topic: '{topic}'")
+    try:
+        # 1a. Ingestion
+        raw_text = fetch_wikipedia_summary(topic)
+
+        # 1b. LLM Structure
+        project_id = re.sub(r'[^a-zA-Z0-9]', '_', topic.lower())
+        config = generate_script_from_text(raw_text, project_id=project_id)
+        jsonschema.validate(instance=config, schema=SCHEMA)
+
+        # 1c. Image Generation
+        logger.info("Generating visual assets...")
+        for scene in config.get("scenes", []):
+            image_path = scene.get("image_path")
+            if image_path and not os.path.exists(image_path):
+                prompt = f"Educational illustration regarding: {scene.get('text')}"
+                generate_image_from_prompt(prompt, image_path)
+
+        # 2: Generate TTS audio clips
+        logger.info("Checking and generating voiceovers...")
+        generate_all_voiceovers(config)
+
+        # 3: Compile video
+        output_path = f"assets/exports/{project_id}.mp4"
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+        logger.info(f"Compiling video to {output_path}...")
+        compile_video(config, output_path=output_path)
+
+        # 4: Upload to YouTube (if not skipped)
+        if not skip_upload:
+            logger.info("Initiating YouTube upload...")
+            upload_video(output_path, config.get("youtube_metadata", {}))
+        else:
+            logger.info("Skipping YouTube upload as requested.")
+
+        logger.info(f"Pipeline Celery execution completed successfully for topic '{topic}'.")
+        return {"status": "success", "topic": topic, "video": output_path}
+    except Exception as e:
+        logger.error(f"Pipeline Celery task failed: {e}", exc_info=True)
+        return {"status": "error", "message": str(e)}

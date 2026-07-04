@@ -10,3 +10,5 @@ ffmpeg-python
 fastapi
 uvicorn
 httpx
+celery
+redis

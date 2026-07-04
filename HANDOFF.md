@@ -19,7 +19,8 @@ We have successfully built the foundation for an **Automated Educational Video C
 - **YouTube Headless Upload:** Implementation of chunked resumable file transfers to the YouTube Data API v3 (`resumable=True`).
 - **QA & Testing:** Complete unit and integration testing via `pytest` (including heavy `--topic` logic mocks). CI/CD implemented via GitHub Actions. Asset boundary checking implemented.
 - **Containerization:** Built a lightweight `python:3.12-slim` Docker image loaded with system `ffmpeg` binaries to standardize deployments.
-- **Frontend UI & API Routing:** Initialized a React application in `/frontend` providing an interactive UI to manually trigger topic queries. Constructed a lightweight `FastAPI` server (`src/api_router.py`) providing a REST `POST /generate` endpoint that dynamically dispatches the video generation logic as a non-blocking background task.
+- **Frontend UI & API Routing:** Initialized a React application in `/frontend` providing an interactive UI to manually trigger topic queries. Constructed a lightweight `FastAPI` server (`src/api_router.py`) providing a REST `POST /generate` endpoint.
+- **Queue Architecture:** Implemented a distributed task queue utilizing `celery` and `redis` (`src/worker.py`), removing localized background tasks to enable heavy video processing across multiple scaled worker nodes.
 - **Documentation Complete:** Established `ROADMAP.md`, `TODO.md`, `VISION.md`, `DEPLOY.md`, `CHANGELOG.md`, and `VERSION.md`. Linter (`flake8`) initialized.
 
 ## Architectural Notes & "Gotchas" (System Memories)
@@ -28,8 +29,7 @@ We have successfully built the foundation for an **Automated Educational Video C
 3. **Asset Safety:** `config.py` explicitly throws an `os.path.exists` validation check early on all required image files to prevent the underlying FFmpeg wrapper from returning vague `AttributeError` exceptions mid-render.
 
 ## Next Steps for Successor Model
-1. Parse the `ROADMAP.md`. Phase 1, Phase 2, and Phase 3 are now fully complete.
-2. Review Phase 4 (CI/CD): We have basic testing, containerization, a React frontend, and FastAPI background task routing. Kubernetes deployment and Celery/RabbitMQ batch queue management remain unbuilt for high-volume scale.
-3. Phase 5 calls for implementing multi-platform syndication engines (e.g. TikTok, X).
+1. Parse the `ROADMAP.md`. Phases 1, 2, 3, and 4 are now largely complete.
+2. Phase 5 calls for implementing multi-platform syndication engines (e.g. TikTok, X) and linking the content generator LLM to analytics polling.
 
 Resume executing recommendations sequentially and autonomously based on the `ROADMAP.md`!
