@@ -10,12 +10,16 @@ auth_headers = {
 }  # admin:supersecretpipeline
 
 
+import os
+
+@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
 def test_generate_video_endpoint_unauthorized():
     payload = {"topic": "Black hole"}
     response = client.post("/generate", json=payload)
     assert response.status_code == 401
 
 
+@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
 def test_generate_video_endpoint_success():
     payload = {"topic": "Black hole", "skip_upload": True}
 
@@ -28,6 +32,7 @@ def test_generate_video_endpoint_success():
         mock_add_task.assert_called_once()
 
 
+@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
 def test_generate_video_endpoint_empty_topic():
     payload = {"topic": "   ", "skip_upload": True}
 
@@ -37,6 +42,7 @@ def test_generate_video_endpoint_empty_topic():
     assert "cannot be empty" in response.json()["detail"]
 
 
+@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
 def test_generate_video_endpoint_missing_payload():
     response = client.post("/generate", json={}, headers=auth_headers)
 
