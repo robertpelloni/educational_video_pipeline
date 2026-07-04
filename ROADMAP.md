@@ -21,7 +21,7 @@
 
 ### Phase 4: CI/CD, Containerization & Orchestration
 - [x] Dockerize the entire application (`Dockerfile`, `docker-compose.yml`) ensuring FFmpeg and dependencies are cleanly packaged.
-- [x] Deploy via Kubernetes or asynchronous queue managers (like Celery/RabbitMQ) for batch video processing at scale.
+- [x] Deploy via Kubernetes and asynchronous queue managers (like Celery/Redis) for batch video processing at scale.
 - [x] Build a React-based interactive web frontend for previewing generated videos before triggering the YouTube publisher.
 - [x] Implement backend routing (`FastAPI`) to expose pipeline orchestration to the frontend UI.
 
