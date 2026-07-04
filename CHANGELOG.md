@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - Unreleased
+
+### Added
+- Phase 2: Hardware-accelerated rendering utilizing `ffmpeg-python` (replacing `moviepy`).
+- Phase 3: Content Ingestion Automation (`ingestion_engine`, `llm_engine`, `image_engine`).
+- Phase 4: CI/CD, Containerization, and Orchestration (`Dockerfile`, FastAPI server, Celery/Redis background worker).
+- Kubernetes deployment manifests (`k8s/`).
+
 ## [0.1.0] - 2024-05-24
 
 ### Added
