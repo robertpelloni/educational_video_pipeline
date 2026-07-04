@@ -46,16 +46,22 @@ def main():
     args = parser.parse_args()
 
     try:
-        if args.topic:
+        if args.topic is not None:
+            topic_clean = args.topic.strip()
+            if not topic_clean:
+                raise ValueError(
+                    "The provided --topic argument cannot be empty or just whitespace."
+                )
+
             logger.info(
-                f"Initiating autonomous end-to-end generation for topic: '{args.topic}'"
+                f"Initiating autonomous end-to-end generation for topic: '{topic_clean}'"
             )
 
             # 1a. Ingestion
-            raw_text = fetch_wikipedia_summary(args.topic)
+            raw_text = fetch_wikipedia_summary(topic_clean)
 
             # 1b. LLM Structure
-            project_id = args.topic.lower().replace(" ", "_")
+            project_id = topic_clean.lower().replace(" ", "_")
             config = generate_script_from_text(raw_text, project_id=project_id)
             jsonschema.validate(instance=config, schema=SCHEMA)
 
