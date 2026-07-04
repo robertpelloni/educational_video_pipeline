@@ -22,6 +22,11 @@ SCHEMA = {
                 "required": ["sequence", "text", "image_path", "voiceover_path"],
             },
         },
+    "platforms": {
+        "type": "array",
+        "items": {"type": "string", "enum": ["youtube", "tiktok", "instagram", "twitter"]},
+        "default": ["youtube"]
+    },
         "youtube_metadata": {
             "type": "object",
             "properties": {

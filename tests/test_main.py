@@ -29,8 +29,8 @@ def test_main_pipeline_execution_with_config():
     ) as mock_generate_audio, patch(
         "main.compile_video"
     ) as mock_compile_video, patch(
-        "main.upload_video"
-    ) as mock_upload_video:
+        "main.youtube_upload"
+    ) as mock_youtube_upload:
 
         # Import main locally so patches apply correctly
         from main import main
@@ -43,7 +43,7 @@ def test_main_pipeline_execution_with_config():
         mock_compile_video.assert_called_once_with(
             mock_config, output_path="dummy_out.mp4"
         )
-        mock_upload_video.assert_called_once_with(
+        mock_youtube_upload.assert_called_once_with(
             "dummy_out.mp4", mock_config["youtube_metadata"]
         )
 
@@ -94,8 +94,8 @@ def test_main_pipeline_execution_with_topic(mock_exists):
     ) as mock_generate_audio, patch(
         "main.compile_video"
     ) as mock_compile_video, patch(
-        "main.upload_video"
-    ) as mock_upload_video:
+        "main.youtube_upload"
+    ) as mock_youtube_upload:
 
         from main import main
 
@@ -115,7 +115,7 @@ def test_main_pipeline_execution_with_topic(mock_exists):
         mock_compile_video.assert_called_once_with(
             mock_llm_config, output_path="dummy_out.mp4"
         )
-        mock_upload_video.assert_not_called()
+        mock_youtube_upload.assert_not_called()
 
 
 def test_main_pipeline_skip_upload():
@@ -129,12 +129,12 @@ def test_main_pipeline_skip_upload():
     with patch.object(sys, "argv", test_args), patch(
         "main.load_config", return_value=mock_config
     ), patch("main.generate_all_voiceovers"), patch("main.compile_video"), patch(
-        "main.upload_video"
-    ) as mock_upload_video:
+        "main.youtube_upload"
+    ) as mock_youtube_upload:
 
         from main import main
 
         main()
 
         # Verify upload was skipped
-        mock_upload_video.assert_not_called()
+        mock_youtube_upload.assert_not_called()

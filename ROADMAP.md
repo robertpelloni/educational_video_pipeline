@@ -26,5 +26,5 @@
 - [x] Implement backend routing (`FastAPI`) to expose pipeline orchestration to the frontend UI.
 
 ### Phase 5: Multi-Platform Syndication
-- [ ] Expand publisher engines to support TikTok, Instagram Reels, and X (Twitter) natively.
+- [x] Expand publisher engines to support TikTok, Instagram Reels, and X (Twitter) natively.
 - [ ] Implement analytics polling to track performance across networks and feedback loop into the content generator LLM.

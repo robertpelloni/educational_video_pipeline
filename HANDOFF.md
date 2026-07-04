@@ -22,6 +22,7 @@ We have successfully built the foundation for an **Automated Educational Video C
 - **Frontend UI & API Routing:** Initialized a React application in `/frontend` providing an interactive UI to manually trigger topic queries. Constructed a lightweight `FastAPI` server (`src/api_router.py`) providing a REST `POST /generate` endpoint.
 - **Queue Architecture:** Implemented a distributed task queue utilizing `celery` and `redis` (`src/worker.py`), removing localized background tasks to enable heavy video processing across multiple scaled worker nodes.
 - **Documentation Complete:** Established `ROADMAP.md`, `TODO.md`, `VISION.md`, `DEPLOY.md`, `CHANGELOG.md`, and `VERSION.md`. Linter (`flake8`) initialized.
+- **Phase 5 (Multi-Platform Syndication) Initialized:** Added publisher engine stubs for TikTok (`src/tiktok_publisher.py`), Instagram Reels (`src/instagram_publisher.py`), and X (Twitter) (`src/twitter_publisher.py`). Updated `main.py` and `config.py` to allow multi-platform targeting via the `"platforms"` array in the JSON schema.
 
 ## Architectural Notes & "Gotchas" (System Memories)
 1. **MoviePy v2.x Strictness:** The repository relies on the modern MoviePy v2 architecture. Do **not** hallucinate or revert back to `moviepy.editor` v1.x methodologies. Operations must use the top-level imports (`from moviepy import ...`). Chained clip functions use `clip.with_duration(...)` or `clip.with_audio(...)` rather than `set_duration()`. Audio and video effects are explicitly passed as classes (e.g., `clip.with_effects([MultiplyVolume(factor)])`).
@@ -30,6 +31,7 @@ We have successfully built the foundation for an **Automated Educational Video C
 
 ## Next Steps for Successor Model
 1. Parse the `ROADMAP.md`. Phases 1, 2, 3, and 4 are now largely complete.
-2. Phase 5 calls for implementing multi-platform syndication engines (e.g. TikTok, X) and linking the content generator LLM to analytics polling.
+2. Phase 5 calls for implementing analytics polling to track performance across networks and building a feedback loop into the content generator LLM based on these analytics.
+3. Replace the placeholder publisher stubs (TikTok, Instagram, Twitter) with actual API implementations.
 
 Resume executing recommendations sequentially and autonomously based on the `ROADMAP.md`!
