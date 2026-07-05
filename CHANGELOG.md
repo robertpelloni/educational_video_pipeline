@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Phase 2: Hardware-accelerated rendering utilizing `ffmpeg-python` (replacing `moviepy`).
 - Phase 2: Implemented advanced video and audio crossfade transitions via `xfade` and `acrossfade`.
+- Phase 2: Implemented real-time subtitle overlays (`.srt`) in the FFmpeg render chain.
 - Phase 3: Content Ingestion Automation (`ingestion_engine`, `llm_engine`, `image_engine`).
 - Phase 4: CI/CD, Containerization, and Orchestration (`Dockerfile`, FastAPI server, Celery/Redis background worker).
 - Kubernetes deployment manifests (`k8s/`).

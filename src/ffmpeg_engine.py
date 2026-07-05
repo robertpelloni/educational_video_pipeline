@@ -73,6 +73,11 @@ def compile_video(config: dict, output_path: str = "output.mp4"):
             .filter("setsar", "1")  # Ensure square pixels
         )
 
+        # Overlay Subtitles
+        srt_file = os.path.splitext(audio_file)[0] + ".srt"
+        if os.path.exists(srt_file):
+            v_stream = v_stream.filter("subtitles", srt_file)
+
         # Audio: Input voiceover
         a_stream = ffmpeg.input(audio_file)
 

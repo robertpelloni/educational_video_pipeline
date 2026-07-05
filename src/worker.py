@@ -7,7 +7,10 @@ from celery import Celery
 from src.config import SCHEMA
 from src.audio_engine import generate_all_voiceovers
 from src.ffmpeg_engine import compile_video
-from src.youtube_publisher import upload_video
+from src.youtube_publisher import upload_video as youtube_upload
+from src.tiktok_publisher import upload_video as tiktok_upload
+from src.instagram_publisher import upload_video as instagram_upload
+from src.twitter_publisher import upload_video as twitter_upload
 from src.ingestion_engine import fetch_wikipedia_summary
 from src.llm_engine import generate_script_from_text
 from src.image_engine import generate_image_from_prompt
@@ -57,12 +60,22 @@ def run_pipeline_task(topic: str, skip_upload: bool):
         logger.info(f"Compiling video to {output_path}...")
         compile_video(config, output_path=output_path)
 
-        # 4: Upload to YouTube (if not skipped)
+        # 4: Upload to platforms (if not skipped)
         if not skip_upload:
-            logger.info("Initiating YouTube upload...")
-            upload_video(output_path, config.get("youtube_metadata", {}))
+            platforms = config.get("platforms", ["youtube"])
+            metadata = config.get("youtube_metadata", {})
+            for platform in platforms:
+                logger.info(f"Initiating {platform} upload...")
+                if platform == "youtube":
+                    youtube_upload(output_path, metadata)
+                elif platform == "tiktok":
+                    tiktok_upload(output_path, metadata)
+                elif platform == "instagram":
+                    instagram_upload(output_path, metadata)
+                elif platform == "twitter":
+                    twitter_upload(output_path, metadata)
         else:
-            logger.info("Skipping YouTube upload as requested.")
+            logger.info("Skipping uploads as requested.")
 
         logger.info(f"Pipeline Celery execution completed successfully for topic '{topic}'.")
         return {"status": "success", "topic": topic, "video": output_path}

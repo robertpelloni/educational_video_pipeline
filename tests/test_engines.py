@@ -61,6 +61,11 @@ def test_compile_video_logic(mock_exists, mock_get_audio_duration, mock_ffmpeg):
     # Verify ffmpeg execution happened
     mock_out.run.assert_called_once_with(quiet=True)
 
+    # Verify subtitles filter was applied (because os.path.exists is mocked to True)
+    # the filter is called on the node, not ffmpeg.filter
+    filter_calls = [call.args[0] for call in mock_node.filter.mock_calls if len(call.args) > 0 and call.args[0] == 'subtitles']
+    assert 'subtitles' in filter_calls
+
 
 @patch("src.ffmpeg_engine.ffmpeg")
 @patch("src.ffmpeg_engine.get_audio_duration", return_value=5.0)
