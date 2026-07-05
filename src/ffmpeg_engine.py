@@ -82,9 +82,27 @@ def compile_video(config: dict, output_path: str = "output.mp4"):
     if not video_streams:
         raise ValueError("No video clips generated. Please check your scenes.")
 
-    # 2. Concatenate all scenes sequentially
-    joined_video = ffmpeg.concat(*video_streams, v=1, a=0)
-    joined_audio = ffmpeg.concat(*audio_streams, v=0, a=1)
+    # 2. Add Transitions and Concatenate
+    transition_duration = config.get("transition_duration", 0.0) # 0 means no transition
+
+    if transition_duration > 0 and len(video_streams) > 1:
+        # Crossfade video
+        joined_video = video_streams[0]
+        cumulative_dur = get_audio_duration(config.get("scenes")[0]["voiceover_path"])
+
+        for i in range(1, len(video_streams)):
+            offset = cumulative_dur - transition_duration
+            joined_video = ffmpeg.filter([joined_video, video_streams[i]], 'xfade', transition='fade', duration=transition_duration, offset=offset)
+            cumulative_dur += get_audio_duration(config.get("scenes")[i]["voiceover_path"]) - transition_duration
+
+        # Crossfade audio (acrossfade)
+        joined_audio = audio_streams[0]
+        for i in range(1, len(audio_streams)):
+            joined_audio = ffmpeg.filter([joined_audio, audio_streams[i]], 'acrossfade', d=transition_duration)
+    else:
+        # Concatenate sequentially with no overlap
+        joined_video = ffmpeg.concat(*video_streams, v=1, a=0)
+        joined_audio = ffmpeg.concat(*audio_streams, v=0, a=1)
 
     # 3. Handle Background Music & Audio Ducking
     music_path = config.get("background_music")
