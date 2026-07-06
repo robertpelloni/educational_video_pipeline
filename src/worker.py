@@ -21,20 +21,19 @@ logger = logging.getLogger(__name__)
 # Configure Celery to use Redis (defaults to localhost:6379, typical for Docker setups)
 redis_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 
-celery_app = Celery(
-    "video_pipeline",
-    broker=redis_url,
-    backend=redis_url
-)
+celery_app = Celery("video_pipeline", broker=redis_url, backend=redis_url)
+
 
 @celery_app.task(name="run_video_pipeline_task")
 def run_pipeline_task(topic: str, skip_upload: bool):
     """
     Executes the end-to-end video pipeline as a distributed Celery task.
     """
-    logger.info(f"Celery Task: Initiating autonomous end-to-end generation for topic: '{topic}'")
+    logger.info(
+        f"Celery Task: Initiating autonomous end-to-end generation for topic: '{topic}'"
+    )
     try:
-        project_id = re.sub(r'[^a-zA-Z0-9]', '_', topic.lower())
+        project_id = re.sub(r"[^a-zA-Z0-9]", "_", topic.lower())
 
         # 1a. Analytics Polling
         analytics_data = fetch_platform_analytics(project_id)
@@ -44,7 +43,9 @@ def run_pipeline_task(topic: str, skip_upload: bool):
         raw_text = fetch_wikipedia_summary(topic)
 
         # 1c. LLM Structure with Feedback Loop
-        config = generate_script_from_text(raw_text, project_id=project_id, analytics_feedback=feedback_summary)
+        config = generate_script_from_text(
+            raw_text, project_id=project_id, analytics_feedback=feedback_summary
+        )
         jsonschema.validate(instance=config, schema=SCHEMA)
 
         # 1c. Image Generation
@@ -81,9 +82,13 @@ def run_pipeline_task(topic: str, skip_upload: bool):
             for platform in platforms:
                 upload_target = output_paths[0]
                 if platform in ["tiktok", "instagram"] and "portrait" in canvas_formats:
-                    upload_target = next((p for p in output_paths if "portrait" in p), upload_target)
+                    upload_target = next(
+                        (p for p in output_paths if "portrait" in p), upload_target
+                    )
                 elif platform == "youtube" and "landscape" in canvas_formats:
-                    upload_target = next((p for p in output_paths if "landscape" in p), upload_target)
+                    upload_target = next(
+                        (p for p in output_paths if "landscape" in p), upload_target
+                    )
 
                 logger.info(f"Initiating {platform} upload using {upload_target}...")
                 if platform == "youtube":
@@ -97,7 +102,9 @@ def run_pipeline_task(topic: str, skip_upload: bool):
         else:
             logger.info("Skipping uploads as requested.")
 
-        logger.info(f"Pipeline Celery execution completed successfully for topic '{topic}'.")
+        logger.info(
+            f"Pipeline Celery execution completed successfully for topic '{topic}'."
+        )
         return {"status": "success", "topic": topic, "videos": output_paths}
     except Exception as e:
         logger.error(f"Pipeline Celery task failed: {e}", exc_info=True)

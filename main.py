@@ -71,7 +71,9 @@ def main():
             raw_text = fetch_wikipedia_summary(topic_clean)
 
             # 1c. LLM Structure
-            config = generate_script_from_text(raw_text, project_id=project_id, analytics_feedback=feedback_summary)
+            config = generate_script_from_text(
+                raw_text, project_id=project_id, analytics_feedback=feedback_summary
+            )
             jsonschema.validate(instance=config, schema=SCHEMA)
 
             # 1d. Image Generation
@@ -109,12 +111,16 @@ def main():
             platforms = config.get("platforms", ["youtube"])
             metadata = config.get("youtube_metadata", {})
             for platform in platforms:
-                # Naive routing: pass the first rendered output, in real life you'd route specific formats to specific platforms
+                # Naive routing: pass the first rendered output
                 upload_target = output_paths[0]
                 if platform in ["tiktok", "instagram"] and "portrait" in canvas_formats:
-                    upload_target = next((p for p in output_paths if "portrait" in p), upload_target)
+                    upload_target = next(
+                        (p for p in output_paths if "portrait" in p), upload_target
+                    )
                 elif platform == "youtube" and "landscape" in canvas_formats:
-                    upload_target = next((p for p in output_paths if "landscape" in p), upload_target)
+                    upload_target = next(
+                        (p for p in output_paths if "landscape" in p), upload_target
+                    )
 
                 logger.info(f"Initiating {platform} upload using {upload_target}...")
                 if platform == "youtube":

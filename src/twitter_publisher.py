@@ -4,6 +4,7 @@ import tweepy
 
 logger = logging.getLogger(__name__)
 
+
 def get_twitter_client():
     """Initializes Tweepy Client using environment variables."""
     api_key = os.environ.get("TWITTER_API_KEY")
@@ -12,17 +13,23 @@ def get_twitter_client():
     access_token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
 
     if not all([api_key, api_secret, access_token, access_token_secret]):
-        logger.warning("Missing Twitter API credentials in environment. Falling back to stub.")
+        logger.warning(
+            "Missing Twitter API credentials in environment. Falling back to stub."
+        )
         return None
 
     # Tweepy Client for v2 API endpoints
     client = tweepy.Client(
-        consumer_key=api_key, consumer_secret=api_secret,
-        access_token=access_token, access_token_secret=access_token_secret
+        consumer_key=api_key,
+        consumer_secret=api_secret,
+        access_token=access_token,
+        access_token_secret=access_token_secret,
     )
 
     # Tweepy API for v1.1 endpoints (Media Uploads currently rely on v1.1)
-    auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_token_secret)
+    auth = tweepy.OAuth1UserHandler(
+        api_key, api_secret, access_token, access_token_secret
+    )
     api = tweepy.API(auth)
 
     return client, api
@@ -40,7 +47,7 @@ def upload_video(video_path, metadata):
 
     twitter_clients = get_twitter_client()
     if not twitter_clients:
-        logger.info(f"Upload to X (Twitter) Successful (Stub)! Video ID: stub_x_id")
+        logger.info("Upload to X (Twitter) Successful (Stub)! Video ID: stub_x_id")
         return "stub_x_id"
 
     client, api = twitter_clients
@@ -55,7 +62,9 @@ def upload_video(video_path, metadata):
         # Note: robust asynchronous polling of media processing status would go here.
 
         # Step 2: Create Tweet via v2 API
-        tweet_text = f"{metadata.get('title', 'Video')}\n\n{metadata.get('description', '')}"
+        tweet_text = (
+            f"{metadata.get('title', 'Video')}\n\n{metadata.get('description', '')}"
+        )
 
         # Append tags
         tags = metadata.get("tags", [])
@@ -65,7 +74,7 @@ def upload_video(video_path, metadata):
         logger.info("Publishing tweet with attached media...")
         response = client.create_tweet(text=tweet_text, media_ids=[media.media_id])
 
-        tweet_id = response.data['id']
+        tweet_id = response.data["id"]
         logger.info(f"Upload to X (Twitter) Successful! Tweet ID: {tweet_id}")
         return str(tweet_id)
 

@@ -3,6 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def upload_video(video_path, metadata):
     """
     Stubs an upload to Instagram Reels.
@@ -14,5 +15,5 @@ def upload_video(video_path, metadata):
 
     # Placeholder for actual Instagram Graph API integration
 
-    logger.info(f"Upload to Instagram Reels Successful (Stub)! Video ID: stub_ig_id")
+    logger.info("Upload to Instagram Reels Successful (Stub)! Video ID: stub_ig_id")
     return "stub_ig_id"

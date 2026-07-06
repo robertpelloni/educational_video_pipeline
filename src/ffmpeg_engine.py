@@ -20,7 +20,9 @@ def get_audio_duration(file_path: str) -> float:
         raise ValueError(f"Failed to probe audio duration for {file_path}")
 
 
-def compile_video(config: dict, output_path: str = "output.mp4", canvas_format: str = None):
+def compile_video(
+    config: dict, output_path: str = "output.mp4", canvas_format: str = None
+):
     """
     Compiles the final video according to the provided config using hardware-accelerated ffmpeg.
 
@@ -92,7 +94,9 @@ def compile_video(config: dict, output_path: str = "output.mp4", canvas_format: 
         raise ValueError("No video clips generated. Please check your scenes.")
 
     # 2. Add Transitions and Concatenate
-    transition_duration = config.get("transition_duration", 0.0) # 0 means no transition
+    transition_duration = config.get(
+        "transition_duration", 0.0
+    )  # 0 means no transition
 
     if transition_duration > 0 and len(video_streams) > 1:
         # Crossfade video
@@ -101,13 +105,24 @@ def compile_video(config: dict, output_path: str = "output.mp4", canvas_format: 
 
         for i in range(1, len(video_streams)):
             offset = cumulative_dur - transition_duration
-            joined_video = ffmpeg.filter([joined_video, video_streams[i]], 'xfade', transition='fade', duration=transition_duration, offset=offset)
-            cumulative_dur += get_audio_duration(config.get("scenes")[i]["voiceover_path"]) - transition_duration
+            joined_video = ffmpeg.filter(
+                [joined_video, video_streams[i]],
+                "xfade",
+                transition="fade",
+                duration=transition_duration,
+                offset=offset,
+            )
+            cumulative_dur += (
+                get_audio_duration(config.get("scenes")[i]["voiceover_path"])
+                - transition_duration
+            )
 
         # Crossfade audio (acrossfade)
         joined_audio = audio_streams[0]
         for i in range(1, len(audio_streams)):
-            joined_audio = ffmpeg.filter([joined_audio, audio_streams[i]], 'acrossfade', d=transition_duration)
+            joined_audio = ffmpeg.filter(
+                [joined_audio, audio_streams[i]], "acrossfade", d=transition_duration
+            )
     else:
         # Concatenate sequentially with no overlap
         joined_video = ffmpeg.concat(*video_streams, v=1, a=0)
@@ -130,7 +145,9 @@ def compile_video(config: dict, output_path: str = "output.mp4", canvas_format: 
         )
     else:
         if music_path:
-            logger.warning(f"Background music missing: {music_path}. Continuing without ducking.")
+            logger.warning(
+                f"Background music missing: {music_path}. Continuing without ducking."
+            )
         final_audio = joined_audio
 
     # 4. Render the final MP4 file

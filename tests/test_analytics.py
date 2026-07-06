@@ -1,5 +1,6 @@
-import pytest
+
 from src.analytics_engine import fetch_platform_analytics
+
 
 def test_fetch_platform_analytics():
     project_id = "test_project_123"

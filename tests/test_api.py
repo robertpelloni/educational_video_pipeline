@@ -1,3 +1,4 @@
+import os
 from fastapi.testclient import TestClient
 from unittest.mock import patch
 from src.api_router import app
@@ -9,8 +10,6 @@ auth_headers = {
     "Authorization": "Basic YWRtaW46c3VwZXJzZWNyZXRwaXBlbGluZQ=="
 }  # admin:supersecretpipeline
 
-
-import os
 
 @patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
 def test_generate_video_endpoint_unauthorized():

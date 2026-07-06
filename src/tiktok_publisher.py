@@ -3,6 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def upload_video(video_path, metadata):
     """
     Stubs an upload to TikTok.
@@ -16,5 +17,5 @@ def upload_video(video_path, metadata):
     # TikTok API requires OAuth and a specific multipart upload flow
     # This is a stub for the architecture
 
-    logger.info(f"Upload to TikTok Successful (Stub)! Video ID: stub_tiktok_id")
+    logger.info("Upload to TikTok Successful (Stub)! Video ID: stub_tiktok_id")
     return "stub_tiktok_id"

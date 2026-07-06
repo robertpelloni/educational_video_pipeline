@@ -63,14 +63,20 @@ def test_compile_video_logic(mock_exists, mock_get_audio_duration, mock_ffmpeg):
 
     # Verify subtitles filter was applied (because os.path.exists is mocked to True)
     # the filter is called on the node, not ffmpeg.filter
-    filter_calls = [call.args[0] for call in mock_node.filter.mock_calls if len(call.args) > 0 and call.args[0] == 'subtitles']
-    assert 'subtitles' in filter_calls
+    filter_calls = [
+        call.args[0]
+        for call in mock_node.filter.mock_calls
+        if len(call.args) > 0 and call.args[0] == "subtitles"
+    ]
+    assert "subtitles" in filter_calls
 
 
 @patch("src.ffmpeg_engine.ffmpeg")
 @patch("src.ffmpeg_engine.get_audio_duration", return_value=5.0)
 @patch("src.ffmpeg_engine.os.path.exists", return_value=True)
-def test_compile_video_with_transitions(mock_exists, mock_get_audio_duration, mock_ffmpeg):
+def test_compile_video_with_transitions(
+    mock_exists, mock_get_audio_duration, mock_ffmpeg
+):
     config = {
         "project_id": "test",
         "canvas_format": "landscape",
@@ -87,8 +93,8 @@ def test_compile_video_with_transitions(mock_exists, mock_get_audio_duration, mo
                 "text": "test 2",
                 "image_path": "fake_image_2.png",
                 "voiceover_path": "fake_audio_2.mp3",
-            }
-        ]
+            },
+        ],
     }
 
     mock_node = MagicMock()
@@ -105,17 +111,24 @@ def test_compile_video_with_transitions(mock_exists, mock_get_audio_duration, mo
 
     mock_out.run.assert_called_once_with(quiet=True)
     # verify that filter was called for xfade/acrossfade
-    filter_calls = [call.args[1] for call in mock_ffmpeg.filter.mock_calls if len(call.args) > 1 and call.args[1] in ('xfade', 'acrossfade')]
-    assert 'xfade' in filter_calls
-    assert 'acrossfade' in filter_calls
+    filter_calls = [
+        call.args[1]
+        for call in mock_ffmpeg.filter.mock_calls
+        if len(call.args) > 1 and call.args[1] in ("xfade", "acrossfade")
+    ]
+    assert "xfade" in filter_calls
+    assert "acrossfade" in filter_calls
+
 
 @patch("src.ffmpeg_engine.ffmpeg")
 @patch("src.ffmpeg_engine.get_audio_duration", return_value=5.0)
 @patch("src.ffmpeg_engine.os.path.exists", return_value=True)
-def test_compile_video_with_canvas_format_override(mock_exists, mock_get_audio_duration, mock_ffmpeg):
+def test_compile_video_with_canvas_format_override(
+    mock_exists, mock_get_audio_duration, mock_ffmpeg
+):
     config = {
         "project_id": "test",
-        "canvas_format": "landscape", # Base config says landscape
+        "canvas_format": "landscape",  # Base config says landscape
         "scenes": [
             {
                 "sequence": 1,
@@ -123,7 +136,7 @@ def test_compile_video_with_canvas_format_override(mock_exists, mock_get_audio_d
                 "image_path": "fake_image_1.png",
                 "voiceover_path": "fake_audio_1.mp3",
             }
-        ]
+        ],
     }
 
     mock_node = MagicMock()
@@ -142,7 +155,11 @@ def test_compile_video_with_canvas_format_override(mock_exists, mock_get_audio_d
     mock_out.run.assert_called_once_with(quiet=True)
 
     # Verify the crop filter used portrait dimensions (1080x1920)
-    filter_calls = [call for call in mock_node.filter.mock_calls if call.args and call.args[0] == 'crop']
+    filter_calls = [
+        call
+        for call in mock_node.filter.mock_calls
+        if call.args and call.args[0] == "crop"
+    ]
     assert len(filter_calls) > 0
     crop_kwargs = filter_calls[0].kwargs
     assert crop_kwargs.get("w") == 1080

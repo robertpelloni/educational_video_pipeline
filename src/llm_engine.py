@@ -3,7 +3,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def generate_script_from_text(raw_text: str, project_id: str = "auto_gen_001", analytics_feedback: str = None) -> dict:
+def generate_script_from_text(
+    raw_text: str, project_id: str = "auto_gen_001", analytics_feedback: str = None
+) -> dict:
     """
     Simulates an LLM endpoint that takes raw ingestion text and formats it
     into the strict JSON schema required by the pipeline's configuration engine.

@@ -41,7 +41,9 @@ def test_main_pipeline_execution_with_config():
         mock_load_config.assert_called_once_with("dummy_config.json")
         mock_generate_audio.assert_called_once_with(mock_config)
         mock_compile_video.assert_called_once_with(
-            mock_config, output_path="dummy_out_landscape.mp4", canvas_format="landscape"
+            mock_config,
+            output_path="dummy_out_landscape.mp4",
+            canvas_format="landscape",
         )
         mock_youtube_upload.assert_called_once_with(
             "dummy_out_landscape.mp4", mock_config["youtube_metadata"]
@@ -84,8 +86,9 @@ def test_main_pipeline_execution_with_topic(mock_exists):
     }
 
     with patch.object(sys, "argv", test_args), patch(
-            "main.fetch_platform_analytics", return_value={"feedback_summary": "test_feedback"}
-        ) as mock_fetch_analytics, patch(
+        "main.fetch_platform_analytics",
+        return_value={"feedback_summary": "test_feedback"},
+    ) as mock_fetch_analytics, patch(
         "main.fetch_wikipedia_summary", return_value="The heart is an organ."
     ) as mock_fetch, patch(
         "main.generate_script_from_text", return_value=mock_llm_config
@@ -107,7 +110,9 @@ def test_main_pipeline_execution_with_topic(mock_exists):
         mock_fetch_analytics.assert_called_once_with("heart")
         mock_fetch.assert_called_once_with("Heart")
         mock_generate_script.assert_called_once_with(
-            "The heart is an organ.", project_id="heart", analytics_feedback="test_feedback"
+            "The heart is an organ.",
+            project_id="heart",
+            analytics_feedback="test_feedback",
         )
         mock_generate_image.assert_called_once_with(
             "Educational illustration regarding: The heart is an organ.",
@@ -116,7 +121,9 @@ def test_main_pipeline_execution_with_topic(mock_exists):
 
         mock_generate_audio.assert_called_once_with(mock_llm_config)
         mock_compile_video.assert_called_once_with(
-            mock_llm_config, output_path="dummy_out_landscape.mp4", canvas_format="landscape"
+            mock_llm_config,
+            output_path="dummy_out_landscape.mp4",
+            canvas_format="landscape",
         )
         mock_youtube_upload.assert_not_called()
 
