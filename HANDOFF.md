@@ -21,7 +21,7 @@ We have successfully built the foundation for an **Automated Educational Video C
 - **Containerization:** Built a lightweight `python:3.12-slim` Docker image loaded with system `ffmpeg` binaries to standardize deployments.
 - **Frontend UI & API Routing:** Initialized a React application in `/frontend` providing an interactive UI to manually trigger topic queries. Constructed a lightweight `FastAPI` server (`src/api_router.py`) providing a REST `POST /generate` endpoint.
 - **Queue Architecture:** Implemented a distributed task queue utilizing `celery` and `redis` (`src/worker.py`), removing localized background tasks to enable heavy video processing across multiple scaled worker nodes.
-- **Documentation Complete:** Established `ROADMAP.md`, `TODO.md`, `VISION.md`, `DEPLOY.md`, `CHANGELOG.md`, and `VERSION.md`. Linter (`flake8`) initialized.
+- **Documentation Complete:** Established `ROADMAP.md`, `TODO.md`, `VISION.md`, `DEPLOY.md`, `CHANGELOG.md`, `VERSION.md`, `IDEAS.md`, and `MEMORY.md`. Linter (`flake8`) initialized.
 - **Phase 5 (Multi-Platform Syndication) Initialized:** Added publisher engine stubs for TikTok (`src/tiktok_publisher.py`), Instagram Reels (`src/instagram_publisher.py`), and X (Twitter) (`src/twitter_publisher.py`). Updated `main.py` and `config.py` to allow multi-platform targeting via the `"platforms"` array in the JSON schema.
 - **Multi-Layout Rendering:** The orchestrator and FFmpeg pipeline now support array-based `canvas_format` configuration, outputting multiple aspect ratios (e.g., portrait and landscape) dynamically and routing them to the correct target publishers.
 - **Analytics Feedback Loop:** Built `src/analytics_engine.py` to poll cross-platform metrics (simulated). The orchestrator (`main.py` / `src/worker.py`) now fetches these heuristics and explicitly injects them back into the LLM engine (`generate_script_from_text(analytics_feedback=...)`) to autonomously adjust hook structures or sentiment per the pipeline spec.
@@ -33,6 +33,7 @@ We have successfully built the foundation for an **Automated Educational Video C
 
 ## Next Steps for Successor Model
 1. Parse the `ROADMAP.md`. Phases 1, 2, 3, 4, and 5 are now fully functionally stubbed and architected.
-2. The core framework is completely built. The final logical steps would involve replacing the placeholder publisher stubs (TikTok, Instagram, Twitter) and the analytics API calls with production credentials and integrations.
+2. Review `IDEAS.md` for potential architectural pivots (like a Rust rewrite of the FFmpeg engine) or frontend expansions.
+3. The core framework is completely built. The final logical steps would involve replacing the placeholder publisher stubs (TikTok, Instagram, Twitter) and the analytics API calls with production credentials and integrations.
 
 Resume executing recommendations sequentially and autonomously based on the `ROADMAP.md`!

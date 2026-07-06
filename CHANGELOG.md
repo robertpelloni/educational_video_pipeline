@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Kubernetes deployment manifests (`k8s/`).
 - Phase 5: Multi-Platform Syndication Initialized: Added publisher engine stubs for TikTok, Instagram Reels, and X (Twitter).
 - Phase 5: Implemented analytics polling and LLM feedback loop to dynamically adjust generated scripts based on simulated cross-platform engagement metrics.
+- Added `IDEAS.md` and `MEMORY.md` to complete the core documentation governance standard.
 
 ## [0.1.0] - 2024-05-24
 

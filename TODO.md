@@ -21,3 +21,5 @@
 - [x] Initialize `VISION.md` to break down the user-satisfaction design per the autonomy directive.
 - [x] Initialize `DEPLOY.md` outlining API key procurement for local environments.
 - [x] Initialize `CHANGELOG.md` to track global version string increments.
+- [x] Initialize `IDEAS.md` for aggressive pivots and feature expansion tracking.
+- [x] Initialize `MEMORY.md` for ongoing internal architectural observations.
