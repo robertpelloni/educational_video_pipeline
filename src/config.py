@@ -6,7 +6,12 @@ SCHEMA = {
     "type": "object",
     "properties": {
         "project_id": {"type": "string"},
-        "canvas_format": {"type": "string", "enum": ["landscape", "portrait"]},
+        "canvas_format": {
+            "anyOf": [
+                {"type": "string", "enum": ["landscape", "portrait"]},
+                {"type": "array", "items": {"type": "string", "enum": ["landscape", "portrait"]}}
+            ]
+        },
         "background_music": {"type": "string"},
         "global_music_volume_db": {"type": "number"},
         "scenes": {

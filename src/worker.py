@@ -54,31 +54,45 @@ def run_pipeline_task(topic: str, skip_upload: bool):
         generate_all_voiceovers(config)
 
         # 3: Compile video
-        output_path = f"assets/exports/{project_id}.mp4"
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        base_output_path = f"assets/exports/{project_id}.mp4"
+        os.makedirs(os.path.dirname(base_output_path), exist_ok=True)
 
-        logger.info(f"Compiling video to {output_path}...")
-        compile_video(config, output_path=output_path)
+        canvas_formats = config.get("canvas_format", ["landscape"])
+        if isinstance(canvas_formats, str):
+            canvas_formats = [canvas_formats]
+
+        output_paths = []
+        for fmt in canvas_formats:
+            fmt_output_path = base_output_path.replace(".mp4", f"_{fmt}.mp4")
+            logger.info(f"Compiling video to {fmt_output_path}...")
+            compile_video(config, output_path=fmt_output_path, canvas_format=fmt)
+            output_paths.append(fmt_output_path)
 
         # 4: Upload to platforms (if not skipped)
         if not skip_upload:
             platforms = config.get("platforms", ["youtube"])
             metadata = config.get("youtube_metadata", {})
             for platform in platforms:
-                logger.info(f"Initiating {platform} upload...")
+                upload_target = output_paths[0]
+                if platform in ["tiktok", "instagram"] and "portrait" in canvas_formats:
+                    upload_target = next((p for p in output_paths if "portrait" in p), upload_target)
+                elif platform == "youtube" and "landscape" in canvas_formats:
+                    upload_target = next((p for p in output_paths if "landscape" in p), upload_target)
+
+                logger.info(f"Initiating {platform} upload using {upload_target}...")
                 if platform == "youtube":
-                    youtube_upload(output_path, metadata)
+                    youtube_upload(upload_target, metadata)
                 elif platform == "tiktok":
-                    tiktok_upload(output_path, metadata)
+                    tiktok_upload(upload_target, metadata)
                 elif platform == "instagram":
-                    instagram_upload(output_path, metadata)
+                    instagram_upload(upload_target, metadata)
                 elif platform == "twitter":
-                    twitter_upload(output_path, metadata)
+                    twitter_upload(upload_target, metadata)
         else:
             logger.info("Skipping uploads as requested.")
 
         logger.info(f"Pipeline Celery execution completed successfully for topic '{topic}'.")
-        return {"status": "success", "topic": topic, "video": output_path}
+        return {"status": "success", "topic": topic, "videos": output_paths}
     except Exception as e:
         logger.error(f"Pipeline Celery task failed: {e}", exc_info=True)
         return {"status": "error", "message": str(e)}

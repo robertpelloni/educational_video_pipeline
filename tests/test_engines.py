@@ -108,3 +108,42 @@ def test_compile_video_with_transitions(mock_exists, mock_get_audio_duration, mo
     filter_calls = [call.args[1] for call in mock_ffmpeg.filter.mock_calls if len(call.args) > 1 and call.args[1] in ('xfade', 'acrossfade')]
     assert 'xfade' in filter_calls
     assert 'acrossfade' in filter_calls
+
+@patch("src.ffmpeg_engine.ffmpeg")
+@patch("src.ffmpeg_engine.get_audio_duration", return_value=5.0)
+@patch("src.ffmpeg_engine.os.path.exists", return_value=True)
+def test_compile_video_with_canvas_format_override(mock_exists, mock_get_audio_duration, mock_ffmpeg):
+    config = {
+        "project_id": "test",
+        "canvas_format": "landscape", # Base config says landscape
+        "scenes": [
+            {
+                "sequence": 1,
+                "text": "test 1",
+                "image_path": "fake_image_1.png",
+                "voiceover_path": "fake_audio_1.mp3",
+            }
+        ]
+    }
+
+    mock_node = MagicMock()
+    mock_node.filter.return_value = mock_node
+    mock_ffmpeg.input.return_value = mock_node
+    mock_ffmpeg.concat.return_value = mock_node
+    mock_ffmpeg.filter.return_value = mock_node
+
+    mock_out = MagicMock()
+    mock_ffmpeg.output.return_value = mock_out
+    mock_ffmpeg.overwrite_output.return_value = mock_out
+
+    # Override to portrait
+    compile_video(config, "test_out_portrait.mp4", canvas_format="portrait")
+
+    mock_out.run.assert_called_once_with(quiet=True)
+
+    # Verify the crop filter used portrait dimensions (1080x1920)
+    filter_calls = [call for call in mock_node.filter.mock_calls if call.args and call.args[0] == 'crop']
+    assert len(filter_calls) > 0
+    crop_kwargs = filter_calls[0].kwargs
+    assert crop_kwargs.get("w") == 1080
+    assert crop_kwargs.get("h") == 1920

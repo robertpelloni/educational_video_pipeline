@@ -20,15 +20,19 @@ def get_audio_duration(file_path: str) -> float:
         raise ValueError(f"Failed to probe audio duration for {file_path}")
 
 
-def compile_video(config: dict, output_path: str = "output.mp4"):
+def compile_video(config: dict, output_path: str = "output.mp4", canvas_format: str = None):
     """
     Compiles the final video according to the provided config using hardware-accelerated ffmpeg.
 
     Args:
         config (dict): Parsed configuration dictionary.
         output_path (str): The output path for the rendered MP4 file.
+        canvas_format (str): Optional override for the canvas format ("landscape" or "portrait").
+                             If not provided, defaults to config["canvas_format"].
     """
-    canvas_format = config.get("canvas_format", "landscape")
+    if canvas_format is None:
+        canvas_format = config.get("canvas_format", "landscape")
+
     target_w, target_h = (1080, 1920) if canvas_format == "portrait" else (1920, 1080)
 
     video_streams = []

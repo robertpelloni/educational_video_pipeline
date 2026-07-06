@@ -23,6 +23,7 @@ We have successfully built the foundation for an **Automated Educational Video C
 - **Queue Architecture:** Implemented a distributed task queue utilizing `celery` and `redis` (`src/worker.py`), removing localized background tasks to enable heavy video processing across multiple scaled worker nodes.
 - **Documentation Complete:** Established `ROADMAP.md`, `TODO.md`, `VISION.md`, `DEPLOY.md`, `CHANGELOG.md`, and `VERSION.md`. Linter (`flake8`) initialized.
 - **Phase 5 (Multi-Platform Syndication) Initialized:** Added publisher engine stubs for TikTok (`src/tiktok_publisher.py`), Instagram Reels (`src/instagram_publisher.py`), and X (Twitter) (`src/twitter_publisher.py`). Updated `main.py` and `config.py` to allow multi-platform targeting via the `"platforms"` array in the JSON schema.
+- **Multi-Layout Rendering:** The orchestrator and FFmpeg pipeline now support array-based `canvas_format` configuration, outputting multiple aspect ratios (e.g., portrait and landscape) dynamically and routing them to the correct target publishers.
 
 ## Architectural Notes & "Gotchas" (System Memories)
 1. **MoviePy v2.x Strictness:** The repository relies on the modern MoviePy v2 architecture. Do **not** hallucinate or revert back to `moviepy.editor` v1.x methodologies. Operations must use the top-level imports (`from moviepy import ...`). Chained clip functions use `clip.with_duration(...)` or `clip.with_audio(...)` rather than `set_duration()`. Audio and video effects are explicitly passed as classes (e.g., `clip.with_effects([MultiplyVolume(factor)])`).
@@ -30,7 +31,7 @@ We have successfully built the foundation for an **Automated Educational Video C
 3. **Asset Safety:** `config.py` explicitly throws an `os.path.exists` validation check early on all required image files to prevent the underlying FFmpeg wrapper from returning vague `AttributeError` exceptions mid-render.
 
 ## Next Steps for Successor Model
-1. Parse the `ROADMAP.md`. Phases 1, 2, 3, and 4 are now largely complete.
+1. Parse the `ROADMAP.md`. Phases 1, 2, 3, and 4 are now fully complete.
 2. Phase 5 calls for implementing analytics polling to track performance across networks and building a feedback loop into the content generator LLM based on these analytics.
 3. Replace the placeholder publisher stubs (TikTok, Instagram, Twitter) with actual API implementations.
 

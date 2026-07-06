@@ -12,7 +12,7 @@
 - [x] Transition from CPU-bound `moviepy` rendering to a hardware-accelerated pipeline (e.g. raw `ffmpeg` via bindings or `ffmpeg-python`) to speed up execution.
 - [x] Introduce advanced transitions between scene boundaries (fade, cross-dissolve, swipe).
 - [x] Support overlaying generated `.srt`/`.vtt` captions onto the video in real-time.
-- [ ] Create multi-layout rendering outputs concurrently (1080x1920 for YouTube Shorts / TikTok vs. 1920x1080 for standard YouTube).
+- [x] Create multi-layout rendering outputs concurrently (1080x1920 for YouTube Shorts / TikTok vs. 1920x1080 for standard YouTube).
 
 ### Phase 3: Content Ingestion Automation
 - [x] Connect the pipeline to public APIs (e.g. Wikipedia, Open Library) for raw text content gathering.

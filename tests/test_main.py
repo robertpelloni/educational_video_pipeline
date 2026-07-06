@@ -41,10 +41,10 @@ def test_main_pipeline_execution_with_config():
         mock_load_config.assert_called_once_with("dummy_config.json")
         mock_generate_audio.assert_called_once_with(mock_config)
         mock_compile_video.assert_called_once_with(
-            mock_config, output_path="dummy_out.mp4"
+            mock_config, output_path="dummy_out_landscape.mp4", canvas_format="landscape"
         )
         mock_youtube_upload.assert_called_once_with(
-            "dummy_out.mp4", mock_config["youtube_metadata"]
+            "dummy_out_landscape.mp4", mock_config["youtube_metadata"]
         )
 
 
@@ -113,7 +113,7 @@ def test_main_pipeline_execution_with_topic(mock_exists):
 
         mock_generate_audio.assert_called_once_with(mock_llm_config)
         mock_compile_video.assert_called_once_with(
-            mock_llm_config, output_path="dummy_out.mp4"
+            mock_llm_config, output_path="dummy_out_landscape.mp4", canvas_format="landscape"
         )
         mock_youtube_upload.assert_not_called()
 
