@@ -38,10 +38,33 @@ def test_tiktok_publisher_real_execution(mock_post, mock_get_creds, mock_video_p
     mock_post.assert_called_once()
 
 
-def test_instagram_publisher(mock_video_path):
+@patch("src.instagram_publisher.get_instagram_credentials")
+def test_instagram_publisher_stub_fallback(mock_get_creds, mock_video_path):
+    mock_get_creds.return_value = None
     metadata = {"title": "Test"}
     result = instagram_upload(mock_video_path, metadata)
     assert result == "stub_ig_id"
+
+
+@patch("src.instagram_publisher.time.sleep", return_value=None)
+@patch("src.instagram_publisher.get_instagram_credentials")
+@patch("src.instagram_publisher.requests.post")
+def test_instagram_publisher_real_execution(mock_post, mock_get_creds, mock_sleep, mock_video_path):
+    mock_get_creds.return_value = ("fake_token", "fake_user_id")
+
+    # We need to mock two sequential POST requests (container creation, then publish)
+    mock_response_1 = MagicMock()
+    mock_response_1.json.return_value = {"id": "container_123"}
+
+    mock_response_2 = MagicMock()
+    mock_response_2.json.return_value = {"id": "real_ig_media_456"}
+
+    mock_post.side_effect = [mock_response_1, mock_response_2]
+
+    metadata = {"title": "Test IG"}
+    result = instagram_upload(mock_video_path, metadata)
+    assert result == "real_ig_media_456"
+    assert mock_post.call_count == 2
 
 
 def test_missing_video():
