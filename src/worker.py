@@ -13,6 +13,7 @@ from src.instagram_publisher import upload_video as instagram_upload
 from src.twitter_publisher import upload_video as twitter_upload
 from src.ingestion_engine import fetch_wikipedia_summary
 from src.llm_engine import generate_script_from_text
+from src.analytics_engine import fetch_platform_analytics
 from src.image_engine import generate_image_from_prompt
 
 logger = logging.getLogger(__name__)
@@ -33,12 +34,17 @@ def run_pipeline_task(topic: str, skip_upload: bool):
     """
     logger.info(f"Celery Task: Initiating autonomous end-to-end generation for topic: '{topic}'")
     try:
-        # 1a. Ingestion
+        project_id = re.sub(r'[^a-zA-Z0-9]', '_', topic.lower())
+
+        # 1a. Analytics Polling
+        analytics_data = fetch_platform_analytics(project_id)
+        feedback_summary = analytics_data.get("feedback_summary")
+
+        # 1b. Ingestion
         raw_text = fetch_wikipedia_summary(topic)
 
-        # 1b. LLM Structure
-        project_id = re.sub(r'[^a-zA-Z0-9]', '_', topic.lower())
-        config = generate_script_from_text(raw_text, project_id=project_id)
+        # 1c. LLM Structure with Feedback Loop
+        config = generate_script_from_text(raw_text, project_id=project_id, analytics_feedback=feedback_summary)
         jsonschema.validate(instance=config, schema=SCHEMA)
 
         # 1c. Image Generation

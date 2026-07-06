@@ -84,6 +84,8 @@ def test_main_pipeline_execution_with_topic(mock_exists):
     }
 
     with patch.object(sys, "argv", test_args), patch(
+            "main.fetch_platform_analytics", return_value={"feedback_summary": "test_feedback"}
+        ) as mock_fetch_analytics, patch(
         "main.fetch_wikipedia_summary", return_value="The heart is an organ."
     ) as mock_fetch, patch(
         "main.generate_script_from_text", return_value=mock_llm_config
@@ -102,9 +104,10 @@ def test_main_pipeline_execution_with_topic(mock_exists):
         main()
 
         # Verify the sequential pipeline calls
+        mock_fetch_analytics.assert_called_once_with("heart")
         mock_fetch.assert_called_once_with("Heart")
         mock_generate_script.assert_called_once_with(
-            "The heart is an organ.", project_id="heart"
+            "The heart is an organ.", project_id="heart", analytics_feedback="test_feedback"
         )
         mock_generate_image.assert_called_once_with(
             "Educational illustration regarding: The heart is an organ.",

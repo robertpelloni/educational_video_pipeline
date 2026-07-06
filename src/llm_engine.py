@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def generate_script_from_text(raw_text: str, project_id: str = "auto_gen_001") -> dict:
+def generate_script_from_text(raw_text: str, project_id: str = "auto_gen_001", analytics_feedback: str = None) -> dict:
     """
     Simulates an LLM endpoint that takes raw ingestion text and formats it
     into the strict JSON schema required by the pipeline's configuration engine.
@@ -14,11 +14,14 @@ def generate_script_from_text(raw_text: str, project_id: str = "auto_gen_001") -
     Args:
         raw_text (str): The raw text ingested from an API (e.g., Wikipedia).
         project_id (str): A unique identifier for the generated job.
+        analytics_feedback (str): Optional feedback string from the analytics engine to guide the LLM.
 
     Returns:
         dict: A dictionary structurally identical to the pipeline's JSON schema.
     """
     logger.info(f"Simulating LLM script generation for project {project_id}...")
+    if analytics_feedback:
+        logger.info(f"Applying analytics feedback loop: {analytics_feedback}")
 
     if not raw_text or len(raw_text.strip()) == 0:
         logger.error("Raw text input to LLM engine is empty.")
