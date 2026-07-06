@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Phase 3: Content Ingestion Automation (`ingestion_engine`, `llm_engine`, `image_engine`).
 - Phase 4: CI/CD, Containerization, and Orchestration (`Dockerfile`, FastAPI server, Celery/Redis background worker).
 - Kubernetes deployment manifests (`k8s/`).
-- Phase 5: Multi-Platform Syndication Initialized: Added publisher engine stubs for TikTok, Instagram Reels, and X (Twitter).
+- Phase 5: Multi-Platform Syndication Initialized: Added publisher engine stubs for TikTok and Instagram Reels.
+- Phase 5: Integrated real `tweepy` implementation for X (Twitter) automated chunked media uploading.
 - Phase 5: Implemented analytics polling and LLM feedback loop to dynamically adjust generated scripts based on simulated cross-platform engagement metrics.
 - Added `IDEAS.md` and `MEMORY.md` to complete the core documentation governance standard.
 

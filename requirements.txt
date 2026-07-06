@@ -11,3 +11,4 @@ uvicorn
 httpx
 celery
 redis
+tweepy>=4.14.0
