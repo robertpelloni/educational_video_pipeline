@@ -12,10 +12,30 @@ def mock_video_path(tmp_path):
     return str(video)
 
 
-def test_tiktok_publisher(mock_video_path):
+@patch("src.tiktok_publisher.get_tiktok_credentials")
+def test_tiktok_publisher_stub_fallback(mock_get_creds, mock_video_path):
+    mock_get_creds.return_value = None
     metadata = {"title": "Test"}
     result = tiktok_upload(mock_video_path, metadata)
     assert result == "stub_tiktok_id"
+
+
+@patch("src.tiktok_publisher.get_tiktok_credentials")
+@patch("src.tiktok_publisher.requests.post")
+def test_tiktok_publisher_real_execution(mock_post, mock_get_creds, mock_video_path):
+    mock_get_creds.return_value = ("fake_token", "fake_open_id")
+
+    mock_response = MagicMock()
+    mock_response.json.return_value = {
+        "error_code": 0,
+        "data": {"share_id": "real_tiktok_id_123"},
+    }
+    mock_post.return_value = mock_response
+
+    metadata = {"title": "Test"}
+    result = tiktok_upload(mock_video_path, metadata)
+    assert result == "real_tiktok_id_123"
+    mock_post.assert_called_once()
 
 
 def test_instagram_publisher(mock_video_path):
