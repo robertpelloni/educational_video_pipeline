@@ -4,7 +4,7 @@ This document serves as a scratchpad for aggressive pivots, refactoring ideas, r
 
 ## 1. Interactive Web Player (Phase 6)
 Instead of just rendering flat MP4s for YouTube/TikTok, we can build a custom HTML5 web application.
-- **Branching Narratives:** Use the LLM to generate multiple script branches. Render video segments for each. The frontend can allow users to click buttons mid-video to choose which topic to dive deeper into.
+- ~~**Branching Narratives:** Use the LLM to generate multiple script branches. Render video segments for each. The frontend can allow users to click buttons mid-video to choose which topic to dive deeper into.~~ (Initialized via `InteractivePlayer.jsx` stub and Pydantic `BranchChoice` models).
 - **Mid-Stream Quizzes:** Overlay interactive quizzes using React while the video pauses.
 
 ## 2. Real API Publisher Implementations

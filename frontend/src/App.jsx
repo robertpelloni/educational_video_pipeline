@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDataFetch } from './hooks/useDataFetch';
+import { InteractivePlayer } from './components/InteractivePlayer';
 
 function App() {
   const [topic, setTopic] = useState('');
@@ -47,6 +48,13 @@ function App() {
           <p><strong>Topic:</strong> {data.topic}</p>
           <p><strong>Status:</strong> {data.status}</p>
           <p><em>Check the Celery worker logs to monitor background compilation progress.</em></p>
+
+          {/* We stub the player using mock scenes just to demonstrate Phase 6 */}
+          <InteractivePlayer scenes={[
+             { sequence: 1, text: "Welcome to the educational interactive journey. Choose a path.", choices: [{label: "Learn about the Heart", target_sequence: 2}, {label: "Learn about the Brain", target_sequence: 3}] },
+             { sequence: 2, text: "The heart pumps blood. Want to learn about veins or arteries?", choices: [{label: "Veins", target_sequence: 4}, {label: "Arteries", target_sequence: 5}] },
+             { sequence: 3, text: "The brain is the control center." }
+          ]} />
         </div>
       )}
     </div>

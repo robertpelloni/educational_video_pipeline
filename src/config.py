@@ -26,6 +26,17 @@ SCHEMA = {
                     "text": {"type": "string"},
                     "image_path": {"type": "string"},
                     "voiceover_path": {"type": "string"},
+                    "choices": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "label": {"type": "string"},
+                                "target_sequence": {"type": "integer"},
+                            },
+                            "required": ["label", "target_sequence"],
+                        },
+                    },
                 },
                 "required": ["sequence", "text", "image_path", "voiceover_path"],
             },

@@ -3,12 +3,17 @@ import os
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
-from typing import List, Literal, Union
+from typing import List, Literal, Union, Optional
 
 logger = logging.getLogger(__name__)
 
 
 # Pydantic Models for Instructor
+class BranchChoice(BaseModel):
+    label: str = Field(description="The text displayed on the interactive button for the user to choose.")
+    target_sequence: int = Field(description="The sequence ID of the scene to jump to if this choice is selected.")
+
+
 class Scene(BaseModel):
     sequence: int
     text: str = Field(description="The educational narration for this specific scene.")
@@ -17,6 +22,10 @@ class Scene(BaseModel):
     )
     voiceover_path: str = Field(
         description="The relative path to save the generated audio. Use the format 'assets/audio/{project_id}_scene_{sequence}.mp3'"
+    )
+    choices: Optional[List[BranchChoice]] = Field(
+        default=None,
+        description="Optional list of interactive branching choices presented at the end of this scene for web-player playback."
     )
 
 

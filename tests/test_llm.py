@@ -6,6 +6,7 @@ from src.llm_engine import (
     VideoScript,
     Scene,
     YouTubeMetadata,
+    BranchChoice,
 )
 from src.config import SCHEMA
 
@@ -43,6 +44,7 @@ def test_generate_script_schema_validation_instructor(mock_get_client):
                 text="Instructor mock text.",
                 image_path="assets/images/1.png",
                 voiceover_path="assets/audio/1.mp3",
+                choices=[BranchChoice(label="Go to scene 2", target_sequence=2)],
             )
         ],
         youtube_metadata=YouTubeMetadata(
