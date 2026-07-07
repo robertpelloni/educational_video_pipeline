@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Phase 5: Integrated real `tweepy` implementation for X (Twitter) automated chunked media uploading.
 - Phase 5: Implemented analytics polling and LLM feedback loop to dynamically adjust generated scripts based on simulated cross-platform engagement metrics.
 - Added `IDEAS.md` and `MEMORY.md` to complete the core documentation governance standard.
+- Upgraded the LLM Engine (`src/llm_engine.py`) to utilize the `instructor` library and `pydantic`, forcing strict adherence to the project's JSON schema when generating video scripts via OpenAI `gpt-4o`.
 
 ## [0.1.0] - 2024-05-24
 

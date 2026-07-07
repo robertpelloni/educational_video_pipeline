@@ -14,7 +14,7 @@ Currently, the multi-platform syndication uses stubs. Here are the target implem
 - **X (Twitter) API v2:** Use the Twitter API v2 media endpoint. Requires chunked upload (INIT, APPEND, FINALIZE) for videos over 15MB.
 
 ## 3. Advanced LLM Generation
-- Transition from basic string splitting in `llm_engine.py` to using `instructor` or `langchain` with OpenAI's `gpt-4o` structured JSON outputs. This guarantees perfect adherence to the `src.config.SCHEMA`.
+- ~~Transition from basic string splitting in `llm_engine.py` to using `instructor` or `langchain` with OpenAI's `gpt-4o` structured JSON outputs. This guarantees perfect adherence to the `src.config.SCHEMA`.~~ (Implemented via `instructor` Pydantic models).
 - Integrate a factual verification step (e.g., retrieving actual Wikipedia paragraphs) and cross-referencing them before script generation to completely eliminate hallucinations.
 
 ## 4. Rust Rewrite for Core Rendering Engine

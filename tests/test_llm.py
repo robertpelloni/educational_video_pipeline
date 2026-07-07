@@ -1,26 +1,70 @@
 import pytest
 import jsonschema
-from src.llm_engine import generate_script_from_text
+from unittest.mock import patch, MagicMock
+from src.llm_engine import (
+    generate_script_from_text,
+    VideoScript,
+    Scene,
+    YouTubeMetadata,
+)
 from src.config import SCHEMA
 
 
-def test_generate_script_schema_validation():
+@patch("src.llm_engine.get_llm_client", return_value=None)
+def test_generate_script_schema_validation_fallback(mock_get_client):
     # Provide a simple multi-sentence text
     raw_text = "This is the first test sentence. This is the second test sentence."
 
-    # Generate the script dictionary
+    # Generate the script dictionary using the fallback mock
     result = generate_script_from_text(raw_text, project_id="test_001")
 
     # Verify the structure perfectly matches the application schema
     try:
         jsonschema.validate(instance=result, schema=SCHEMA)
     except jsonschema.ValidationError as e:
-        pytest.fail(f"LLM Engine output did not match required schema: {e}")
+        pytest.fail(f"LLM Engine fallback output did not match required schema: {e}")
 
     # Verify logic parses sentences properly
     assert result["project_id"] == "test_001"
     assert len(result["scenes"]) == 2
     assert result["scenes"][0]["text"] == "This is the first test sentence."
+
+
+@patch("src.llm_engine.get_llm_client")
+def test_generate_script_schema_validation_instructor(mock_get_client):
+    mock_client = MagicMock()
+    mock_get_client.return_value = mock_client
+
+    mock_script = VideoScript(
+        project_id="test_instructor_001",
+        scenes=[
+            Scene(
+                sequence=1,
+                text="Instructor mock text.",
+                image_path="assets/images/1.png",
+                voiceover_path="assets/audio/1.mp3",
+            )
+        ],
+        youtube_metadata=YouTubeMetadata(
+            title="Title", description="Desc", tags=["tag1"]
+        ),
+    )
+
+    # Mock the completions object returned by instructor
+    mock_client.chat.completions.create.return_value = mock_script
+
+    raw_text = "Instructor mock text."
+    result = generate_script_from_text(raw_text, project_id="test_instructor_001")
+
+    # Verify the structure perfectly matches the application schema
+    try:
+        jsonschema.validate(instance=result, schema=SCHEMA)
+    except jsonschema.ValidationError as e:
+        pytest.fail(f"Instructor LLM Engine output did not match required schema: {e}")
+
+    assert result["project_id"] == "test_instructor_001"
+    assert len(result["scenes"]) == 1
+    assert result["scenes"][0]["text"] == "Instructor mock text."
 
 
 def test_generate_script_empty_text():
