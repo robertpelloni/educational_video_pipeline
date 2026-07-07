@@ -56,6 +56,7 @@ def upload_video(video_url, metadata):
             "access_token": access_token,
         }
 
+        response = None
         response = requests.post(container_url, data=container_payload)
         response.raise_for_status()
         container_id = response.json().get("id")

@@ -49,7 +49,9 @@ def test_instagram_publisher_stub_fallback(mock_get_creds, mock_video_path):
 @patch("src.instagram_publisher.time.sleep", return_value=None)
 @patch("src.instagram_publisher.get_instagram_credentials")
 @patch("src.instagram_publisher.requests.post")
-def test_instagram_publisher_real_execution(mock_post, mock_get_creds, mock_sleep, mock_video_path):
+def test_instagram_publisher_real_execution(
+    mock_post, mock_get_creds, mock_sleep, mock_video_path
+):
     mock_get_creds.return_value = ("fake_token", "fake_user_id")
 
     # We need to mock two sequential POST requests (container creation, then publish)

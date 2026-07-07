@@ -13,9 +13,9 @@ While the core functionality of the educational video pipeline is heavily tested
 - **Action Required:** As multi-platform publishing scales, tests must be added to the publisher scripts simulating HTTP 401s from Google/TikTok and catching those exceptions gracefully without killing the queue.
 
 ## 3. Celery Timeout and Memory Leaks
-- **Gap:** Celery workers lack integration tests validating timeouts if `ffmpeg` hangs on a corrupted asset.
+- ~~**Gap:** Celery workers lack integration tests validating timeouts if `ffmpeg` hangs on a corrupted asset.~~ (Resolved)
 - **Risk:** Hardware-accelerated tasks can sometimes freeze. If `ffmpeg.run()` stalls forever, the worker node will bottleneck.
-- **Action Required:** Write tests passing `soft_time_limit` parameters into the task mock and asserting that a `SoftTimeLimitExceeded` exception is caught.
+- ~~**Action Required:** Write tests passing `soft_time_limit` parameters into the task mock and asserting that a `SoftTimeLimitExceeded` exception is caught.~~ (Resolved)
 
 ## 4. Frontend E2E Playwright Tests
 - **Gap:** The newly scaffolded React application (`frontend/`) contains a `useDataFetch.js` hook and `App.jsx`, but lacks a Playwright or Cypress suite to test the user interface end-to-end.

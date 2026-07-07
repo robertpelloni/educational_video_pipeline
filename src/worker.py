@@ -3,6 +3,7 @@ import jsonschema
 import logging
 import re
 from celery import Celery
+from celery.exceptions import SoftTimeLimitExceeded
 
 from src.config import SCHEMA
 from src.audio_engine import generate_all_voiceovers
@@ -24,10 +25,11 @@ redis_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 celery_app = Celery("video_pipeline", broker=redis_url, backend=redis_url)
 
 
-@celery_app.task(name="run_video_pipeline_task")
+@celery_app.task(name="run_video_pipeline_task", soft_time_limit=300, time_limit=360)
 def run_pipeline_task(topic: str, skip_upload: bool):
     """
     Executes the end-to-end video pipeline as a distributed Celery task.
+    Implements a 5 minute soft timeout to catch FFmpeg hanging processes safely.
     """
     logger.info(
         f"Celery Task: Initiating autonomous end-to-end generation for topic: '{topic}'"
@@ -106,6 +108,9 @@ def run_pipeline_task(topic: str, skip_upload: bool):
             f"Pipeline Celery execution completed successfully for topic '{topic}'."
         )
         return {"status": "success", "topic": topic, "videos": output_paths}
+    except SoftTimeLimitExceeded:
+        logger.error(f"Pipeline Celery task timed out for topic '{topic}'. FFmpeg or Network API hung.")
+        return {"status": "error", "message": "Task execution exceeded soft time limit."}
     except Exception as e:
         logger.error(f"Pipeline Celery task failed: {e}", exc_info=True)
         return {"status": "error", "message": str(e)}

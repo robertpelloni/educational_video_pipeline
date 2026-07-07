@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Phase 3: Content Ingestion Automation (`ingestion_engine`, `llm_engine`, `image_engine`).
 - Phase 4: CI/CD, Containerization, and Orchestration (`Dockerfile`, FastAPI server, Celery/Redis background worker).
 - Phase 4: scaffolded an interactive React application (`frontend/`) configured with Vite, providing a `useDataFetch` hook for triggering tasks via the FastAPI backend.
+- Phase 4: hardened Celery worker nodes by implementing `soft_time_limit` and `time_limit` parameters to prevent zombie processes during heavy FFmpeg loads.
 - Kubernetes deployment manifests (`k8s/`).
 - Phase 5: Multi-Platform Syndication Initialized.
 - Phase 5: Integrated real `requests` implementation for TikTok automated media uploading via the Content Posting API.

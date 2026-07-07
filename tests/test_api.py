@@ -51,6 +51,7 @@ def test_generate_video_endpoint_missing_payload():
     # Missing required 'topic' field should return 422 Unprocessable Entity
     assert response.status_code == 422
 
+
 @patch.dict(os.environ, clear=True)
 def test_generate_video_endpoint_missing_server_config():
     """
@@ -70,7 +71,7 @@ def test_generate_video_endpoint_invalid_credentials():
     """
     payload = {"topic": "Black hole"}
     bad_headers = {
-        "Authorization": "Basic YWRtaW46YmFkcGFzc3dvcmQ=" # admin:badpassword
+        "Authorization": "Basic YWRtaW46YmFkcGFzc3dvcmQ="  # admin:badpassword
     }
     response = client.post("/generate", json=payload, headers=bad_headers)
     assert response.status_code == 401
@@ -94,4 +95,4 @@ def test_generate_video_endpoint_celery_broker_failure():
 
         # We expect the test client to catch the 500.
         with pytest.raises(Exception):
-             client.post("/generate", json=payload, headers=auth_headers)
+            client.post("/generate", json=payload, headers=auth_headers)
