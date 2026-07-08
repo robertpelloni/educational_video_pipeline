@@ -22,6 +22,8 @@ We have successfully built the foundation for an **Automated Educational Video C
 - **Frontend UI & API Routing:** Initialized a React application in `/frontend` providing an interactive UI to manually trigger topic queries. Constructed a lightweight `FastAPI` server (`src/api_router.py`) providing a REST `POST /generate` endpoint.
 - **Queue Architecture:** Implemented a distributed task queue utilizing `celery` and `redis` (`src/worker.py`), removing localized background tasks to enable heavy video processing across multiple scaled worker nodes.
 - **Documentation Complete:** Established `ROADMAP.md`, `TODO.md`, `VISION.md`, `DEPLOY.md`, `CHANGELOG.md`, `VERSION.md`, `IDEAS.md`, and `MEMORY.md`. Linter (`flake8`) initialized.
+- **Phase 6 (Interactive Web Player):** Initialized interactive web player. Scaffolded React stub `InteractivePlayer.jsx` and introduced Pydantic `BranchChoice` arrays to allow LLM engines to map branching narratives. Connected branching video segments dynamically by tracking sequence offsets.
+- **Security:** Implemented `slowapi` rate limiting on the FastAPI backend (5 requests per minute) to protect the Celery queue from DoS attacks.
 - **Phase 5 (Multi-Platform Syndication):** Implemented real publishing logic for X (Twitter) via `tweepy` using `v1.1` chunked media upload endpoints combined with `v2` tweet creation. Implemented real publishing logic for TikTok via the Content Posting API using `requests`. Implemented real publishing logic for Instagram Reels via the Facebook Graph API using `requests`. Updated `main.py` and `config.py` to allow multi-platform targeting via the `"platforms"` array in the JSON schema.
 - **Multi-Layout Rendering:** The orchestrator and FFmpeg pipeline now support array-based `canvas_format` configuration, outputting multiple aspect ratios (e.g., portrait and landscape) dynamically and routing them to the correct target publishers.
 - **Analytics Feedback Loop:** Built `src/analytics_engine.py` to poll cross-platform metrics (simulated). The orchestrator (`main.py` / `src/worker.py`) now fetches these heuristics and explicitly injects them back into the LLM engine (`generate_script_from_text(analytics_feedback=...)`) to autonomously adjust hook structures or sentiment per the pipeline spec.
@@ -32,7 +34,7 @@ We have successfully built the foundation for an **Automated Educational Video C
 3. **Asset Safety:** `config.py` explicitly throws an `os.path.exists` validation check early on all required image files to prevent the underlying FFmpeg wrapper from returning vague `AttributeError` exceptions mid-render.
 
 ## Next Steps for Successor Model
-1. Parse the `ROADMAP.md`. Phases 1, 2, 3, 4, and 5 are now fully functionally stubbed and architected.
+1. Parse the `ROADMAP.md`. Phases 1, 2, 3, 4, 5, and 6 are now fully functionally stubbed and architected.
 2. Review `IDEAS.md` for potential architectural pivots (like a Rust rewrite of the FFmpeg engine) or frontend expansions.
 3. The core framework is completely built. The final logical steps would involve replacing the analytics API stub with a production implementation and verifying credentials across all newly integrated publisher modules (TikTok, Instagram, Twitter).
 
