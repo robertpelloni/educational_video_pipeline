@@ -96,3 +96,25 @@ def test_generate_video_endpoint_celery_broker_failure():
         # We expect the test client to catch the 500.
         with pytest.raises(Exception):
             client.post("/generate", json=payload, headers=auth_headers)
+
+@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+def test_generate_video_endpoint_rate_limiting():
+    from src.api_router import limiter
+    limiter.reset()
+    """
+    Tests edge case where rate limiting is triggered (HTTP 429).
+    We dispatch 6 requests to hit the 5/minute limit.
+    """
+    payload = {"topic": "Rate Limit Test", "skip_upload": True}
+
+    with patch("src.api_router.run_pipeline_task.delay") as mock_delay:
+        mock_delay.return_value.id = "test-task-id-123"
+
+        # Fire 5 successful requests
+        for _ in range(5):
+            response = client.post("/generate", json=payload, headers=auth_headers)
+            assert response.status_code == 200
+
+        # The 6th request should be rate limited
+        response = client.post("/generate", json=payload, headers=auth_headers)
+        assert response.status_code == 429

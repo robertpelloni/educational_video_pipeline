@@ -4,6 +4,10 @@ import logging
 import secrets
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from fastapi import Request
 from pydantic import BaseModel
 
 from src.worker import run_pipeline_task
@@ -39,11 +43,15 @@ def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
     return credentials.username
 
 
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(
     title="Educational Video Pipeline API",
     description="REST endpoint to trigger autonomous video generation",
     version="0.1.0",
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 class GenerateRequest(BaseModel):
@@ -52,18 +60,20 @@ class GenerateRequest(BaseModel):
 
 
 @app.post("/generate")
+@limiter.limit("5/minute")
 async def generate_video(
-    request: GenerateRequest,
+    request: Request,
+    payload: GenerateRequest,
     username: str = Depends(verify_credentials),
 ):
-    topic_clean = request.topic.strip()
+    topic_clean = payload.topic.strip()
     if not topic_clean:
         raise HTTPException(
             status_code=400, detail="The provided topic cannot be empty."
         )
 
     # Dispatch the job to the distributed Celery queue
-    task = run_pipeline_task.delay(topic_clean, request.skip_upload)
+    task = run_pipeline_task.delay(topic_clean, payload.skip_upload)
 
     return {
         "status": "success",

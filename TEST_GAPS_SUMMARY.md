@@ -3,9 +3,9 @@
 While the core functionality of the educational video pipeline is heavily tested using mocked unit and integration tests across 32 individual assertions, there are several edge cases and external boundaries that currently lack robust coverage.
 
 ## 1. Rate Limiting Middleware
-- **Gap:** The FastAPI router does not have explicit token bucket or sliding window rate-limiting middleware configured.
+- ~~**Gap:** The FastAPI router does not have explicit token bucket or sliding window rate-limiting middleware configured.~~ (Resolved)
 - **Risk:** Without an active rate limiter, the `/generate` endpoint could be subject to denial-of-service (DoS) by an authenticated user spamming the Celery queue.
-- **Action Required:** Introduce an IP/Auth-token based rate limiter (e.g., using `slowapi`) and write test cases simulating `HTTP 429 Too Many Requests`.
+- ~~**Action Required:** Introduce an IP/Auth-token based rate limiter (e.g., using `slowapi`) and write test cases simulating `HTTP 429 Too Many Requests`.~~ (Resolved)
 
 ## 2. API Token Expiration
 - **Gap:** The current Basic Auth implementation relies on static environment passwords (`secrets.compare_digest`). It does not handle temporary session states (like JWTs) or OAuth 2.0.
