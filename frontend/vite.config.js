@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
           configure: (proxy, _options) => {
-            proxy.on('proxyReq', (proxyReq, req, _res) => {
+            proxy.on('proxyReq', (proxyReq, _req, _res) => {
               // Inject Basic Auth headers for local dev environment
               const authStr = Buffer.from(`${proxyAuthUsername}:${proxyAuthPassword}`).toString('base64');
               proxyReq.setHeader('Authorization', `Basic ${authStr}`);

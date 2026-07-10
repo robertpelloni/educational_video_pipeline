@@ -97,9 +97,11 @@ def test_generate_video_endpoint_celery_broker_failure():
         with pytest.raises(Exception):
             client.post("/generate", json=payload, headers=auth_headers)
 
+
 @patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
 def test_generate_video_endpoint_rate_limiting():
     from src.api_router import limiter
+
     limiter.reset()
     """
     Tests edge case where rate limiting is triggered (HTTP 429).

@@ -109,8 +109,13 @@ def run_pipeline_task(topic: str, skip_upload: bool):
         )
         return {"status": "success", "topic": topic, "videos": output_paths}
     except SoftTimeLimitExceeded:
-        logger.error(f"Pipeline Celery task timed out for topic '{topic}'. FFmpeg or Network API hung.")
-        return {"status": "error", "message": "Task execution exceeded soft time limit."}
+        logger.error(
+            f"Pipeline Celery task timed out for topic '{topic}'. FFmpeg or Network API hung."
+        )
+        return {
+            "status": "error",
+            "message": "Task execution exceeded soft time limit.",
+        }
     except Exception as e:
         logger.error(f"Pipeline Celery task failed: {e}", exc_info=True)
         return {"status": "error", "message": str(e)}

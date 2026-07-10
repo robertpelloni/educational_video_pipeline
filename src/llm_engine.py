@@ -10,22 +10,26 @@ logger = logging.getLogger(__name__)
 
 # Pydantic Models for Instructor
 class BranchChoice(BaseModel):
-    label: str = Field(description="The text displayed on the interactive button for the user to choose.")
-    target_sequence: int = Field(description="The sequence ID of the scene to jump to if this choice is selected.")
+    label: str = Field(
+        description="The text displayed on the interactive button for the user to choose."
+    )
+    target_sequence: int = Field(
+        description="The sequence ID of the scene to jump to if this choice is selected."
+    )
 
 
 class Scene(BaseModel):
     sequence: int
     text: str = Field(description="The educational narration for this specific scene.")
     image_path: str = Field(
-        description="The relative path to save the generated image. Use the format 'assets/images/{project_id}_scene_{sequence}.png'"
+        description="Path to save the generated image. Use 'assets/images/{project_id}_scene_{sequence}.png'"
     )
     voiceover_path: str = Field(
-        description="The relative path to save the generated audio. Use the format 'assets/audio/{project_id}_scene_{sequence}.mp3'"
+        description="Path to save the generated audio. Use 'assets/audio/{project_id}_scene_{sequence}.mp3'"
     )
     choices: Optional[List[BranchChoice]] = Field(
         default=None,
-        description="Optional list of interactive branching choices presented at the end of this scene for web-player playback."
+        description="Optional list of interactive branching choices for this scene.",
     )
 
 
@@ -80,7 +84,10 @@ def generate_script_from_text(
 
     if client:
         # Real LLM Execution via Instructor
-        system_prompt = "You are an expert educational video scriptwriter. Your job is to parse raw text and structure it into an engaging sequence of scenes for a video."
+        system_prompt = (
+            "You are an expert educational video scriptwriter. "
+            "Your job is to parse raw text and structure it into an engaging sequence of scenes for a video."
+        )
         if analytics_feedback:
             system_prompt += f" Consider this feedback from previous videos to improve engagement: {analytics_feedback}"
 

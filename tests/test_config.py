@@ -1,7 +1,6 @@
 import pytest
 import jsonschema
-from src.config import load_config, SCHEMA
-import os
+from src.config import SCHEMA
 
 
 def test_schema_valid_config():
@@ -16,9 +15,7 @@ def test_schema_valid_config():
                 "text": "test scene",
                 "image_path": "assets/images/1.png",
                 "voiceover_path": "assets/audio/1.mp3",
-                "choices": [
-                    {"label": "Next", "target_sequence": 2}
-                ]
+                "choices": [{"label": "Next", "target_sequence": 2}],
             }
         ],
         "platforms": ["youtube"],
@@ -57,9 +54,7 @@ def test_schema_invalid_choice_format():
                 "text": "test scene",
                 "image_path": "assets/images/1.png",
                 "voiceover_path": "assets/audio/1.mp3",
-                "choices": [
-                    {"label": "Next"} # Missing target_sequence
-                ]
+                "choices": [{"label": "Next"}],  # Missing target_sequence
             }
         ],
         "platforms": ["youtube"],
