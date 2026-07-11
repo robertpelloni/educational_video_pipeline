@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgraded the LLM Engine (`src/llm_engine.py`) to utilize the `instructor` library and `pydantic`, forcing strict adherence to the project's JSON schema when generating video scripts via OpenAI `gpt-4o`.
 - Phase 6: Initialized interactive web player. Scaffolded React stub `InteractivePlayer.jsx` and introduced Pydantic `BranchChoice` arrays to allow LLM engines to map branching narratives.
 - Implemented `slowapi` rate limiting on the FastAPI backend (5 requests per minute) to protect the Celery queue from DoS attacks.
+- Added tests simulating HTTP 401 Unauthorized API responses from TikTok and Instagram to prevent worker crashing.
+- Added Playwright testing to boot the mock Vite server and test DOM element states, fulfilling all `TEST_GAPS_SUMMARY.md` milestones.
 
 ## [0.1.0] - 2024-05-24
 
