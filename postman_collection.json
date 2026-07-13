@@ -1,0 +1,243 @@
+{
+  "info": {
+    "name": "Educational Video Pipeline API",
+    "description": "Postman collection generated from OpenAPI spec to test the /generate endpoint and validation layer.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Generate Video - Success",
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "password",
+              "value": "{{API_PASSWORD}}",
+              "type": "string"
+            },
+            {
+              "key": "username",
+              "value": "{{API_USERNAME}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": \"Space Exploration\",\n  \"skip_upload\": true\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/generate",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "generate"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Generate Video - Empty Topic (400)",
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "password",
+              "value": "{{API_PASSWORD}}",
+              "type": "string"
+            },
+            {
+              "key": "username",
+              "value": "{{API_USERNAME}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": \"   \",\n  \"skip_upload\": true\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/generate",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "generate"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Generate Video - Missing Payload (422)",
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "password",
+              "value": "{{API_PASSWORD}}",
+              "type": "string"
+            },
+            {
+              "key": "username",
+              "value": "{{API_USERNAME}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/generate",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "generate"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 422\", function () {",
+              "    pm.response.to.have.status(422);",
+              "});",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Generate Video - Unauthorized (401)",
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "password",
+              "value": "wrongpassword",
+              "type": "string"
+            },
+            {
+              "key": "username",
+              "value": "wronguser",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": \"Space Exploration\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/generate",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "generate"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 401\", function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "API_USERNAME",
+      "value": "admin"
+    },
+    {
+      "key": "API_PASSWORD",
+      "value": "supersecretpipeline"
+    }
+  ]
+}

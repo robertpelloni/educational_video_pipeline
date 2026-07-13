@@ -18,6 +18,14 @@ class BranchChoice(BaseModel):
     )
 
 
+class Quiz(BaseModel):
+    question: str = Field(description="The question to ask the user.")
+    options: List[str] = Field(description="A list of possible answers for the quiz.")
+    correct_answer_index: int = Field(
+        description="The zero-based index of the correct answer in the options list."
+    )
+
+
 class Scene(BaseModel):
     sequence: int
     text: str = Field(description="The educational narration for this specific scene.")
@@ -26,6 +34,10 @@ class Scene(BaseModel):
     )
     voiceover_path: str = Field(
         description="Path to save the generated audio. Use 'assets/audio/{project_id}_scene_{sequence}.mp3'"
+    )
+    quiz: Optional[Quiz] = Field(
+        default=None,
+        description="Optional mid-stream quiz to present to the user at the end of the scene.",
     )
     choices: Optional[List[BranchChoice]] = Field(
         default=None,

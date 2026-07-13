@@ -59,7 +59,14 @@ class GenerateRequest(BaseModel):
     skip_upload: bool = True
 
 
-@app.post("/generate")
+@app.post(
+    "/generate",
+    responses={
+        400: {"description": "Bad Request - Empty topic"},
+        401: {"description": "Unauthorized"},
+        429: {"description": "Too Many Requests"}
+    }
+)
 @limiter.limit("5/minute")
 async def generate_video(
     request: Request,

@@ -5,7 +5,7 @@ This document serves as a scratchpad for aggressive pivots, refactoring ideas, r
 ## 1. Interactive Web Player (Phase 6)
 Instead of just rendering flat MP4s for YouTube/TikTok, we can build a custom HTML5 web application.
 - ~~**Branching Narratives:** Use the LLM to generate multiple script branches. Render video segments for each. The frontend can allow users to click buttons mid-video to choose which topic to dive deeper into.~~ (Initialized via `InteractivePlayer.jsx` stub and Pydantic `BranchChoice` models).
-- **Mid-Stream Quizzes:** Overlay interactive quizzes using React while the video pauses.
+- ~~**Mid-Stream Quizzes:** Overlay interactive quizzes using React while the video pauses.~~ (Implemented)
 
 ## 2. Real API Publisher Implementations
 Currently, the multi-platform syndication uses stubs. Here are the target implementations:
@@ -18,4 +18,4 @@ Currently, the multi-platform syndication uses stubs. Here are the target implem
 - ~~Integrate a factual verification step (e.g., retrieving actual Wikipedia paragraphs) and cross-referencing them before script generation to completely eliminate hallucinations.~~ (Implemented via `ingestion_engine`)
 
 ## 4. Rust Rewrite for Core Rendering Engine
-- **Aggressive Refactoring:** As the queue scales, the Python orchestrator might become a bottleneck for heavy `ffmpeg` process management. We could port `ffmpeg_engine.py` to a highly concurrent Rust microservice using `ffmpeg-next`, exposed via gRPC to the main Python orchestrator.
+- ~~**Aggressive Refactoring:** As the queue scales, the Python orchestrator might become a bottleneck for heavy `ffmpeg` process management. We could port `ffmpeg_engine.py` to a highly concurrent Rust microservice using `ffmpeg-next`, exposed via gRPC to the main Python orchestrator.~~ (Decided against due to current stability of `ffmpeg-python` bindings and worker scaling.)

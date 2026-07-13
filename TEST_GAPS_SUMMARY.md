@@ -23,3 +23,8 @@ While the core functionality of the educational video pipeline is heavily tested
 - ~~**Action Required:** Introduce Playwright testing to boot the mock Vite server and test DOM element states.~~ (Resolved)
 
 These gaps should be flagged with a `priority: medium` label in the project's issue tracker for the next sprint iteration.
+
+## 5. OpenAPI Specification Mismatch vs Live Application
+- **Gap:** The `openapi.json` generated from the FastAPI application does not document the `HTTP 400 Bad Request` or `HTTP 401 Unauthorized` responses that the API endpoint actually returns under validation and authentication failures. It only surfaces `HTTP 200 OK` and `HTTP 422 Validation Error`.
+- **Risk:** Clients relying strictly on the OpenAPI schema for SDK generation or integrations will lack proper error-handling awareness for authentication limits and bad payload types.
+- **Action Required:** Update the FastAPI `@app.post("/generate", responses={...})` decorator to explicitly document `400` and `401` status codes.

@@ -8,3 +8,5 @@ client_secrets.json
 token.json
 output.mp4
 final_video.mp4
+
+frontend/test-results/

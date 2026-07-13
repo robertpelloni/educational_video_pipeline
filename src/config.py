@@ -97,9 +97,12 @@ def load_config(file_path):
 
     # Dynamically resolve background music
     if config.get("background_music"):
-        config["background_music"] = os.path.join(
-            config_dir, config["background_music"]
-        )
+        config["background_music"] = os.path.join(config_dir, config["background_music"])
+        if not os.path.exists(config["background_music"]):
+            raise FileNotFoundError(
+                f"Configuration error: Background music asset not found at "
+                f"'{config['background_music']}'."
+            )
 
     # Asset validation check and dynamic path resolution
     for scene in config.get("scenes", []):
@@ -113,5 +116,10 @@ def load_config(file_path):
 
         if scene.get("voiceover_path"):
             scene["voiceover_path"] = os.path.join(config_dir, scene["voiceover_path"])
+            if not os.path.exists(scene["voiceover_path"]):
+                raise FileNotFoundError(
+                    f"Configuration error: Source voiceover asset not found at "
+                    f"'{scene['voiceover_path']}' for scene {scene.get('sequence')}."
+                )
 
     return config

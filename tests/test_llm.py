@@ -7,6 +7,7 @@ from src.llm_engine import (
     Scene,
     YouTubeMetadata,
     BranchChoice,
+    Quiz,
 )
 from src.config import SCHEMA
 
@@ -44,6 +45,9 @@ def test_generate_script_schema_validation_instructor(mock_get_client):
                 text="Instructor mock text.",
                 image_path="assets/images/1.png",
                 voiceover_path="assets/audio/1.mp3",
+                quiz=Quiz(
+                    question="What is this?", options=["A", "B"], correct_answer_index=0
+                ),
                 choices=[BranchChoice(label="Go to scene 2", target_sequence=2)],
             )
         ],
@@ -73,3 +77,19 @@ def test_generate_script_empty_text():
     # Verify it handles empty input correctly
     with pytest.raises(ValueError, match="Cannot generate script from empty text."):
         generate_script_from_text("")
+
+
+@patch("src.llm_engine.get_llm_client")
+def test_generate_script_instructor_exception_fallback(mock_get_client):
+    mock_client = MagicMock()
+    mock_get_client.return_value = mock_client
+
+    mock_client.chat.completions.create.side_effect = Exception("OpenAI API Down")
+
+    raw_text = "Fallback on exception."
+    result = generate_script_from_text(raw_text, project_id="test_exception")
+
+    # Should fall back gracefully to basic parsing
+    assert result["project_id"] == "test_exception"
+    assert len(result["scenes"]) == 1
+    assert result["scenes"][0]["text"] == "Fallback on exception."
