@@ -148,3 +148,27 @@ def test_main_pipeline_skip_upload():
 
         # Verify upload was skipped
         mock_youtube_upload.assert_not_called()
+
+@patch("main.os.path.exists", return_value=False)
+def test_main_pipeline_empty_topic_sys_exit(mock_exists):
+    """
+    Tests the main.py entrypoint to ensure providing an empty/whitespace topic
+    results in a graceful system exit (sys.exit(1)).
+    """
+    test_args = [
+        "main.py",
+        "--topic",
+        "   ",
+        "--output",
+        "dummy_out.mp4",
+        "--skip-upload",
+    ]
+
+    with patch.object(sys, "argv", test_args):
+        from main import main
+
+        try:
+            main()
+            assert False, "main() should have raised SystemExit"
+        except SystemExit as e:
+            assert e.code == 1

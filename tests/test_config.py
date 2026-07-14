@@ -126,7 +126,8 @@ def test_load_config_missing_image_asset(tmp_path):
         load_config(str(config_file))
 
 
-def test_load_config_missing_voiceover_asset(tmp_path):
+
+def test_load_config_missing_voiceover_asset_resolves_path(tmp_path):
     config_data = {
         "project_id": "test_001",
         "canvas_format": "landscape",
@@ -148,18 +149,16 @@ def test_load_config_missing_voiceover_asset(tmp_path):
         },
     }
 
-    # Touch the image path so it passes the first check
+    # Touch the image path so it passes the image check
     img_path = tmp_path / "valid_image.png"
     img_path.touch()
 
     config_file = tmp_path / "valid_schema_missing_audio.json"
     config_file.write_text(json.dumps(config_data))
 
-    with pytest.raises(
-        FileNotFoundError, match="Configuration error: Source voiceover asset not found"
-    ):
-        load_config(str(config_file))
-
+    # Should NOT raise FileNotFoundError anymore, should just resolve path
+    parsed = load_config(str(config_file))
+    assert parsed["scenes"][0]["voiceover_path"].endswith("non_existent_audio.mp3")
 
 def test_load_config_missing_background_music(tmp_path):
     config_data = {

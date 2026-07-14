@@ -114,12 +114,9 @@ def load_config(file_path):
                     f"'{scene['image_path']}' for scene {scene.get('sequence')}."
                 )
 
+        # We only dynamically resolve the path, but do NOT enforce existence here,
+        # as generate_all_voiceovers is responsible for synthesizing missing TTS audio downstream.
         if scene.get("voiceover_path"):
             scene["voiceover_path"] = os.path.join(config_dir, scene["voiceover_path"])
-            if not os.path.exists(scene["voiceover_path"]):
-                raise FileNotFoundError(
-                    f"Configuration error: Source voiceover asset not found at "
-                    f"'{scene['voiceover_path']}' for scene {scene.get('sequence')}."
-                )
 
     return config

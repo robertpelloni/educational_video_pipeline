@@ -28,3 +28,8 @@ These gaps should be flagged with a `priority: medium` label in the project's is
 - **Gap:** The `openapi.json` generated from the FastAPI application does not document the `HTTP 400 Bad Request` or `HTTP 401 Unauthorized` responses that the API endpoint actually returns under validation and authentication failures. It only surfaces `HTTP 200 OK` and `HTTP 422 Validation Error`.
 - **Risk:** Clients relying strictly on the OpenAPI schema for SDK generation or integrations will lack proper error-handling awareness for authentication limits and bad payload types.
 - **Action Required:** Update the FastAPI `@app.post("/generate", responses={...})` decorator to explicitly document `400` and `401` status codes.
+
+## 6. Input Parser Boundary Tests
+- ~~**Gap:** The CLI parser (`main.py`) does not explicitly test boundary conditions for malformed input topics.~~ (Resolved)
+- **Risk:** End-users running the pipeline via terminal could pass empty strings or strings consisting entirely of whitespace, crashing the underlying Wikipedia ingestion engine down the stack.
+- ~~**Action Required:** Implement negative path testing in `tests/test_main.py` explicitly asserting that an empty string provided to `--topic` raises a safe `SystemExit(1)` inside `main.py` without leaking stack traces or crashing worker nodes.~~ (Resolved)
