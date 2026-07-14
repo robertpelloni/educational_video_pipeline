@@ -190,3 +190,31 @@ def test_twitter_publisher_real_execution(mock_get_client, mock_video_path):
         filename=mock_video_path, media_category="tweet_video"
     )
     mock_client.create_tweet.assert_called_once()
+
+@patch("src.youtube_publisher.authenticate_youtube")
+@patch("src.youtube_publisher.MediaFileUpload")
+@patch("time.sleep", return_value=None)
+def test_youtube_publisher_retries_on_latency(mock_sleep, mock_media, mock_auth, mock_video_path):
+    mock_youtube = MagicMock()
+    mock_auth.return_value = mock_youtube
+
+    mock_request = MagicMock()
+    # First two calls raise an Exception (simulated latency), third succeeds
+    mock_status = MagicMock()
+    mock_status.progress.return_value = 1.0
+    mock_request.next_chunk.side_effect = [
+        Exception("Simulated network timeout"),
+        Exception("Simulated connection reset"),
+        (mock_status, {"id": "youtube_id_999"})
+    ]
+
+    mock_youtube.videos().insert.return_value = mock_request
+
+    from src.youtube_publisher import upload_video
+    metadata = {"title": "Test Title"}
+
+    result = upload_video(mock_video_path, metadata)
+
+    assert result == "youtube_id_999"
+    assert mock_request.next_chunk.call_count == 3
+    assert mock_sleep.call_count == 2
