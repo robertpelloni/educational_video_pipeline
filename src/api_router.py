@@ -8,7 +8,8 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from fastapi import Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+from typing import Any
 
 from src.worker import run_pipeline_task
 
@@ -55,8 +56,22 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 class GenerateRequest(BaseModel):
-    topic: str = Field(..., max_length=255)
+    topic: str = Field(default="Random Educational Topic")
     skip_upload: bool = Field(default=True)
+
+    @field_validator("topic", mode="before")
+    def validate_topic(cls, v: Any) -> str:
+        if not v or not isinstance(v, str) or not v.strip():
+            return "Random Educational Topic"
+        return v[:255]
+
+    @field_validator("skip_upload", mode="before")
+    def validate_skip_upload(cls, v: Any) -> bool:
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, str) and v.lower() in ["false", "0", "no"]:
+            return False
+        return True
 
 
 @app.post(
@@ -74,10 +89,6 @@ async def generate_video(
     username: str = Depends(verify_credentials),
 ):
     topic_clean = payload.topic.strip()
-    if not topic_clean:
-        raise HTTPException(
-            status_code=400, detail="The provided topic cannot be empty."
-        )
 
     # Dispatch the job to the distributed Celery queue
     task = run_pipeline_task.delay(topic_clean, payload.skip_upload)

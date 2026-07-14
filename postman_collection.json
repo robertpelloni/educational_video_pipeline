@@ -61,7 +61,7 @@
       ]
     },
     {
-      "name": "Generate Video - Empty Topic (400)",
+      "name": "Generate Video - Empty Topic (200)",
       "request": {
         "auth": {
           "type": "basic",
@@ -105,8 +105,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 400\", function () {",
-              "    pm.response.to.have.status(400);",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
               "});",
               ""
             ],
@@ -116,7 +116,7 @@
       ]
     },
     {
-      "name": "Generate Video - Missing Payload (422)",
+      "name": "Generate Video - Missing Payload (200)",
       "request": {
         "auth": {
           "type": "basic",
@@ -160,8 +160,8 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 422\", function () {",
-              "    pm.response.to.have.status(422);",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
               "});",
               ""
             ],
@@ -226,7 +226,7 @@
       ]
     },
     {
-      "name": "Generate Video - Topic Too Long (422)",
+      "name": "Generate Video - Topic Too Long (200)",
       "request": {
         "auth": {
           "type": "basic",
@@ -269,7 +269,7 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 422\", function () {\n    pm.response.to.have.status(422);\n});\n"
+              "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
             ],
             "type": "text/javascript"
           }
@@ -277,7 +277,7 @@
       ]
     },
     {
-      "name": "Generate Video - Wrong Type Boolean (422)",
+      "name": "Generate Video - Wrong Type Boolean (200)",
       "request": {
         "auth": {
           "type": "basic",
@@ -320,7 +320,7 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 422\", function () {\n    pm.response.to.have.status(422);\n});\n"
+              "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n"
             ],
             "type": "text/javascript"
           }

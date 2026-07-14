@@ -38,18 +38,22 @@ def test_generate_video_endpoint_success():
 def test_generate_video_endpoint_empty_topic():
     payload = {"topic": "   ", "skip_upload": True}
 
-    response = client.post("/generate", json=payload, headers=auth_headers)
+    with patch("src.api_router.run_pipeline_task.delay") as mock_delay:
+        mock_delay.return_value.id = "test-task-id-123"
+        response = client.post("/generate", json=payload, headers=auth_headers)
 
-    assert response.status_code == 400
-    assert "cannot be empty" in response.json()["detail"]
+    assert response.status_code == 200
+    assert response.json()["topic"] == "Random Educational Topic"
 
 
 @patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
 def test_generate_video_endpoint_missing_payload():
-    response = client.post("/generate", json={}, headers=auth_headers)
+    with patch("src.api_router.run_pipeline_task.delay") as mock_delay:
+        mock_delay.return_value.id = "test-task-id-123"
+        response = client.post("/generate", json={}, headers=auth_headers)
 
-    # Missing required 'topic' field should return 422 Unprocessable Entity
-    assert response.status_code == 422
+    assert response.status_code == 200
+    assert response.json()["topic"] == "Random Educational Topic"
 
 
 @patch.dict(os.environ, clear=True)
@@ -123,23 +127,30 @@ def test_generate_video_endpoint_rate_limiting():
 
 @patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
 def test_generate_video_endpoint_topic_too_long():
-    # Test boundary condition where topic exceeds the Pydantic max_length (255)
+    from src.api_router import limiter
+    limiter.reset()
+
     long_topic = "A" * 256
     payload = {"topic": long_topic, "skip_upload": True}
 
-    response = client.post("/generate", json=payload, headers=auth_headers)
+    with patch("src.api_router.run_pipeline_task.delay") as mock_delay:
+        mock_delay.return_value.id = "test-task-id-123"
+        response = client.post("/generate", json=payload, headers=auth_headers)
 
-    # Should return 422 Unprocessable Entity
-    assert response.status_code == 422
-    assert "String should have at most 255 characters" in str(response.json()["detail"])
+    assert response.status_code == 200
+    assert len(response.json()["topic"]) == 255
+    assert response.json()["topic"] == "A" * 255
 
 @patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
 def test_generate_video_endpoint_wrong_type_boolean():
-    # Test malformed payload: passing a string to a boolean field
+    from src.api_router import limiter
+    limiter.reset()
+
     payload = {"topic": "Valid Topic", "skip_upload": "not_a_bool"}
 
-    response = client.post("/generate", json=payload, headers=auth_headers)
+    with patch("src.api_router.run_pipeline_task.delay") as mock_delay:
+        mock_delay.return_value.id = "test-task-id-123"
+        response = client.post("/generate", json=payload, headers=auth_headers)
 
-    # Should return 422 Unprocessable Entity
-    assert response.status_code == 422
-    assert "Input should be a valid boolean" in str(response.json()["detail"])
+    assert response.status_code == 200
+    mock_delay.assert_called_once_with("Valid Topic", True)

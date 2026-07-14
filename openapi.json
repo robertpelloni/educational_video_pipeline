@@ -63,8 +63,8 @@
         "properties": {
           "topic": {
             "type": "string",
-            "maxLength": 255,
-            "title": "Topic"
+            "title": "Topic",
+            "default": "Random Educational Topic"
           },
           "skip_upload": {
             "type": "boolean",
@@ -73,9 +73,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "topic"
-        ],
         "title": "GenerateRequest"
       },
       "HTTPValidationError": {
