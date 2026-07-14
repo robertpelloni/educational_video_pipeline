@@ -224,6 +224,108 @@
           }
         }
       ]
+    },
+    {
+      "name": "Generate Video - Topic Too Long (422)",
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "password",
+              "value": "{{API_PASSWORD}}",
+              "type": "string"
+            },
+            {
+              "key": "username",
+              "value": "{{API_USERNAME}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n  \"skip_upload\": true\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/generate",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "generate"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 422\", function () {\n    pm.response.to.have.status(422);\n});\n"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Generate Video - Wrong Type Boolean (422)",
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "password",
+              "value": "{{API_PASSWORD}}",
+              "type": "string"
+            },
+            {
+              "key": "username",
+              "value": "{{API_USERNAME}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": \"Space Exploration\",\n  \"skip_upload\": \"not_a_bool\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/generate",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "generate"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 422\", function () {\n    pm.response.to.have.status(422);\n});\n"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
     }
   ],
   "variable": [

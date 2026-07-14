@@ -63,6 +63,7 @@
         "properties": {
           "topic": {
             "type": "string",
+            "maxLength": 255,
             "title": "Topic"
           },
           "skip_upload": {

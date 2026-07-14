@@ -120,3 +120,26 @@ def test_generate_video_endpoint_rate_limiting():
         # The 6th request should be rate limited
         response = client.post("/generate", json=payload, headers=auth_headers)
         assert response.status_code == 429
+
+@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+def test_generate_video_endpoint_topic_too_long():
+    # Test boundary condition where topic exceeds the Pydantic max_length (255)
+    long_topic = "A" * 256
+    payload = {"topic": long_topic, "skip_upload": True}
+
+    response = client.post("/generate", json=payload, headers=auth_headers)
+
+    # Should return 422 Unprocessable Entity
+    assert response.status_code == 422
+    assert "String should have at most 255 characters" in str(response.json()["detail"])
+
+@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+def test_generate_video_endpoint_wrong_type_boolean():
+    # Test malformed payload: passing a string to a boolean field
+    payload = {"topic": "Valid Topic", "skip_upload": "not_a_bool"}
+
+    response = client.post("/generate", json=payload, headers=auth_headers)
+
+    # Should return 422 Unprocessable Entity
+    assert response.status_code == 422
+    assert "Input should be a valid boolean" in str(response.json()["detail"])

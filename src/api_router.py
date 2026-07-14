@@ -8,7 +8,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from fastapi import Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from src.worker import run_pipeline_task
 
@@ -55,8 +55,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 class GenerateRequest(BaseModel):
-    topic: str
-    skip_upload: bool = True
+    topic: str = Field(..., max_length=255)
+    skip_upload: bool = Field(default=True)
 
 
 @app.post(
