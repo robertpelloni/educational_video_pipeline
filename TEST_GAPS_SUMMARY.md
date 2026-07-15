@@ -33,3 +33,8 @@ These gaps should be flagged with a `priority: medium` label in the project's is
 - ~~**Gap:** The CLI parser (`main.py`) does not explicitly test boundary conditions for malformed input topics.~~ (Resolved)
 - **Risk:** End-users running the pipeline via terminal could pass empty strings or strings consisting entirely of whitespace, crashing the underlying Wikipedia ingestion engine down the stack.
 - ~~**Action Required:** Implement negative path testing in `tests/test_main.py` explicitly asserting that an empty string provided to `--topic` raises a safe `SystemExit(1)` inside `main.py` without leaking stack traces or crashing worker nodes.~~ (Resolved)
+
+## 8. Async Generation Tests
+- ~~**Gap:** `src/audio_engine.py` generates voiceovers and subtitles using `asyncio` streams (`_generate_audio_async`), but no unit tests specifically mocked and verified this asynchronous data flow and byte-writing sequence.~~ (Resolved)
+- **Risk:** Without asserting that the `WordBoundary` data stream properly maps to the `.srt` SubMaker output, timing mismatches in generated subtitles could go undetected.
+- ~~**Action Required:** Implement a targeted mock test for the `edge_tts.Communicate.stream()` generator, verifying that `audio` chunks trigger file writes and `WordBoundary` chunks trigger `sub_maker.feed()` calls.~~ (Resolved)

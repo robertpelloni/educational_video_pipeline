@@ -164,3 +164,29 @@ def test_compile_video_with_canvas_format_override(
     crop_kwargs = filter_calls[0].kwargs
     assert crop_kwargs.get("w") == 1080
     assert crop_kwargs.get("h") == 1920
+
+@patch("src.audio_engine.edge_tts.Communicate")
+@patch("src.audio_engine.edge_tts.SubMaker")
+@patch("builtins.open", new_callable=MagicMock)
+def test_generate_voiceover_sync(mock_open, mock_submaker, mock_communicate):
+    mock_comm_instance = MagicMock()
+
+    # Mock the async generator for stream() using an async wrapper
+    async def mock_stream():
+        yield {"type": "audio", "data": b"fake_audio_data"}
+        yield {"type": "WordBoundary", "data": "fake_boundary"}
+
+    mock_comm_instance.stream.return_value = mock_stream()
+    mock_communicate.return_value = mock_comm_instance
+
+    mock_sub_instance = MagicMock()
+    mock_sub_instance.get_srt.return_value = "1\n00:00:00,000 --> 00:00:01,000\nTest"
+    mock_submaker.return_value = mock_sub_instance
+
+    from src.audio_engine import generate_voiceover
+    with patch("src.audio_engine.os.makedirs"):
+        generate_voiceover("Test text", "fake_output.mp3")
+
+    # Verify file writes occurred
+    assert mock_open.call_count == 2  # One for mp3, one for srt
+    mock_sub_instance.feed.assert_called_once()
