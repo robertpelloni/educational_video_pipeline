@@ -43,3 +43,8 @@ These gaps should be flagged with a `priority: medium` label in the project's is
 - ~~**Gap:** The `/submit` endpoint lacked test coverage for validation fallbacks and rate limiting behavior.~~ (Resolved)
 - **Risk:** Malformed payloads could crash the API or bypass the token bucket limits.
 - ~~**Action Required:** Implement targeted unit tests checking boundaries for empty fields, missing payloads, and rate limits to ensure resilient 200/429 status codes before proceeding to frontend handler integration.~~ (Resolved)
+
+## 11. Async Edge Cases (Input Parser & Worker)
+- **Gap:** The input parser and async workers lacked specific edge case validation for certain timing conditions or out-of-order streams.
+- **Risk:** Without robust handling, edge cases might cause unexpected bottlenecks during high-concurrency API calls or CLI executions.
+- **Action Required:** Expand the async tests suite to catch streaming boundary exceptions or implement specific mocking limits on the file parsing layer.
