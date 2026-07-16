@@ -19,6 +19,48 @@ from src.image_engine import generate_image_from_prompt
 
 logger = logging.getLogger(__name__)
 
+
+def sanitize_topic(topic: str) -> str:
+    """
+    Sanitizes user input to create a safe project ID string.
+    Removes non-alphanumeric characters, converts to lowercase, and limits length.
+    """
+    if not topic or not isinstance(topic, str):
+        return "default_project"
+
+    sanitized = re.sub(r"[^a-zA-Z0-9]", "_", topic.strip().lower())
+    # Collapse multiple underscores
+    sanitized = re.sub(r"_+", "_", sanitized).strip("_")
+
+    # Boundary: Ensure it's not empty after sanitization and limit length
+    if not sanitized:
+        return "default_project"
+
+    return sanitized[:50]
+
+
+def async_queue_wrapper(func):
+    """
+    Decorator to wrap Celery tasks and provide a standardized error-handling
+    boundary for asynchronous queues.
+    """
+    import functools
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except SoftTimeLimitExceeded:
+            logger.error(f"Task {func.__name__} timed out. Celery SoftTimeLimitExceeded caught.")
+            return {
+                "status": "error",
+                "message": "Task execution exceeded soft time limit."
+            }
+        except Exception as e:
+            logger.error(f"Task {func.__name__} failed unexpectedly: {e}", exc_info=True)
+            return {"status": "error", "message": str(e)}
+    return wrapper
+
+
 # Configure Celery to use Redis (defaults to localhost:6379, typical for Docker setups)
 redis_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 
@@ -26,6 +68,7 @@ celery_app = Celery("video_pipeline", broker=redis_url, backend=redis_url)
 
 
 @celery_app.task(name="run_video_pipeline_task", soft_time_limit=300, time_limit=360)
+@async_queue_wrapper
 def run_pipeline_task(topic: str, skip_upload: bool):
     """
     Executes the end-to-end video pipeline as a distributed Celery task.
@@ -35,7 +78,7 @@ def run_pipeline_task(topic: str, skip_upload: bool):
         f"Celery Task: Initiating autonomous end-to-end generation for topic: '{topic}'"
     )
     try:
-        project_id = re.sub(r"[^a-zA-Z0-9]", "_", topic.lower())
+        project_id = sanitize_topic(topic)
 
         # 1a. Analytics Polling
         analytics_data = fetch_platform_analytics(project_id)
