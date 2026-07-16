@@ -1,0 +1,192 @@
+import pytest
+from unittest.mock import patch, MagicMock
+from src.ffmpeg_engine import compile_video, MissingAssetError
+
+
+def test_missing_image_raises_error(tmp_path):
+    config = {
+        "project_id": "test",
+        "canvas_format": "landscape",
+        "background_music": "fake_music.mp3",
+        "global_music_volume_db": -18.0,
+        "scenes": [
+            {
+                "sequence": 1,
+                "text": "test",
+                "image_path": "nonexistent_image.png",
+                "voiceover_path": "nonexistent_audio.mp3",
+            }
+        ],
+        "youtube_metadata": {},
+    }
+
+    with pytest.raises(MissingAssetError) as excinfo:
+        compile_video(config, "output.mp4")
+    assert "Missing image asset" in str(excinfo.value)
+
+
+@patch("src.ffmpeg_engine.ffmpeg")
+@patch("src.ffmpeg_engine.get_audio_duration", return_value=5.0)
+@patch("src.ffmpeg_engine.os.path.exists", return_value=True)
+def test_compile_video_logic(mock_exists, mock_get_audio_duration, mock_ffmpeg):
+    config = {
+        "project_id": "test",
+        "canvas_format": "landscape",
+        "background_music": "fake_music.mp3",
+        "global_music_volume_db": -18.0,
+        "scenes": [
+            {
+                "sequence": 1,
+                "text": "test",
+                "image_path": "fake_image.png",
+                "voiceover_path": "fake_audio.mp3",
+            }
+        ],
+        "youtube_metadata": {},
+    }
+
+    # We mock the chainable ffmpeg API structure
+    mock_node = MagicMock()
+    mock_node.filter.return_value = mock_node
+    mock_ffmpeg.input.return_value = mock_node
+    mock_ffmpeg.concat.return_value = mock_node
+    mock_ffmpeg.filter.return_value = mock_node
+
+    mock_out = MagicMock()
+    mock_ffmpeg.output.return_value = mock_out
+    mock_ffmpeg.overwrite_output.return_value = mock_out
+
+    compile_video(config, "test_out.mp4")
+
+    # Verify ffmpeg execution happened
+    mock_out.run.assert_called_once_with(quiet=True)
+
+    # Verify subtitles filter was applied (because os.path.exists is mocked to True)
+    # the filter is called on the node, not ffmpeg.filter
+    filter_calls = [
+        call.args[0]
+        for call in mock_node.filter.mock_calls
+        if len(call.args) > 0 and call.args[0] == "subtitles"
+    ]
+    assert "subtitles" in filter_calls
+
+
+@patch("src.ffmpeg_engine.ffmpeg")
+@patch("src.ffmpeg_engine.get_audio_duration", return_value=5.0)
+@patch("src.ffmpeg_engine.os.path.exists", return_value=True)
+def test_compile_video_with_transitions(
+    mock_exists, mock_get_audio_duration, mock_ffmpeg
+):
+    config = {
+        "project_id": "test",
+        "canvas_format": "landscape",
+        "transition_duration": 1.0,
+        "scenes": [
+            {
+                "sequence": 1,
+                "text": "test 1",
+                "image_path": "fake_image_1.png",
+                "voiceover_path": "fake_audio_1.mp3",
+            },
+            {
+                "sequence": 2,
+                "text": "test 2",
+                "image_path": "fake_image_2.png",
+                "voiceover_path": "fake_audio_2.mp3",
+            },
+        ],
+    }
+
+    mock_node = MagicMock()
+    mock_node.filter.return_value = mock_node
+    mock_ffmpeg.input.return_value = mock_node
+    mock_ffmpeg.concat.return_value = mock_node
+    mock_ffmpeg.filter.return_value = mock_node
+
+    mock_out = MagicMock()
+    mock_ffmpeg.output.return_value = mock_out
+    mock_ffmpeg.overwrite_output.return_value = mock_out
+
+    compile_video(config, "test_out_transition.mp4")
+
+    mock_out.run.assert_called_once_with(quiet=True)
+    # verify that filter was called for xfade/acrossfade
+    filter_calls = [
+        call.args[1]
+        for call in mock_ffmpeg.filter.mock_calls
+        if len(call.args) > 1 and call.args[1] in ("xfade", "acrossfade")
+    ]
+    assert "xfade" in filter_calls
+    assert "acrossfade" in filter_calls
+
+
+@patch("src.ffmpeg_engine.ffmpeg")
+@patch("src.ffmpeg_engine.get_audio_duration", return_value=5.0)
+@patch("src.ffmpeg_engine.os.path.exists", return_value=True)
+def test_compile_video_with_canvas_format_override(
+    mock_exists, mock_get_audio_duration, mock_ffmpeg
+):
+    config = {
+        "project_id": "test",
+        "canvas_format": "landscape",  # Base config says landscape
+        "scenes": [
+            {
+                "sequence": 1,
+                "text": "test 1",
+                "image_path": "fake_image_1.png",
+                "voiceover_path": "fake_audio_1.mp3",
+            }
+        ],
+    }
+
+    mock_node = MagicMock()
+    mock_node.filter.return_value = mock_node
+    mock_ffmpeg.input.return_value = mock_node
+    mock_ffmpeg.concat.return_value = mock_node
+    mock_ffmpeg.filter.return_value = mock_node
+
+    mock_out = MagicMock()
+    mock_ffmpeg.output.return_value = mock_out
+    mock_ffmpeg.overwrite_output.return_value = mock_out
+
+    # Override to portrait
+    compile_video(config, "test_out_portrait.mp4", canvas_format="portrait")
+
+    mock_out.run.assert_called_once_with(quiet=True)
+
+    # Verify the crop filter used portrait dimensions (1080x1920)
+    filter_calls = [
+        call
+        for call in mock_node.filter.mock_calls
+        if call.args and call.args[0] == "crop"
+    ]
+    assert len(filter_calls) > 0
+    crop_kwargs = filter_calls[0].kwargs
+    assert crop_kwargs.get("w") == 1080
+    assert crop_kwargs.get("h") == 1920
+
+@patch("src.audio_engine.edge_tts.Communicate")
+@patch("src.audio_engine.edge_tts.SubMaker")
+@patch("builtins.open", new_callable=MagicMock)
+def test_generate_voiceover_sync(mock_open, mock_submaker, mock_communicate):
+    mock_comm_instance = MagicMock()
+
+    # Mock the async generator for stream() using an async wrapper
+    async def mock_stream():
+        yield {"type": "audio", "data": b"fake_audio_data"}
+        yield {"type": "WordBoundary", "data": "fake_boundary"}
+
+    mock_comm_instance.stream.return_value = mock_stream()
+    mock_communicate.return_value = mock_comm_instance
+
+    mock_sub_instance = MagicMock()
+    mock_sub_instance.get_srt.return_value = "1\n00:00:00,000 --> 00:00:01,000\nTest"
+    mock_submaker.return_value = mock_sub_instance
+
+    from src.audio_engine import generate_voiceover
+    with patch("src.audio_engine.os.makedirs"):
+        generate_voiceover("Test text", "fake_output.mp3")
+
+    # Verify file writes occurred
+    assert mock_open.call_count == 2  # One for mp3, one for srt
+    mock_sub_instance.feed.assert_called_once()
