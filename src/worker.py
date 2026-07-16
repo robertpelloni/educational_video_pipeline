@@ -67,6 +67,7 @@ redis_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 celery_app = Celery("video_pipeline", broker=redis_url, backend=redis_url)
 
 
+
 @celery_app.task(name="run_video_pipeline_task", soft_time_limit=300, time_limit=360)
 @async_queue_wrapper
 def run_pipeline_task(topic: str, skip_upload: bool):
@@ -77,88 +78,93 @@ def run_pipeline_task(topic: str, skip_upload: bool):
     logger.info(
         f"Celery Task: Initiating autonomous end-to-end generation for topic: '{topic}'"
     )
+
+    project_id = sanitize_topic(topic)
+
+    # 1a. Analytics Polling
+    analytics_data = fetch_platform_analytics(project_id)
+    feedback_summary = analytics_data.get("feedback_summary")
+
+    # 1b. Ingestion
+    raw_text = fetch_wikipedia_summary(topic)
+
+    # 1c. LLM Structure with Feedback Loop
+    config = generate_script_from_text(
+        raw_text, project_id=project_id, analytics_feedback=feedback_summary
+    )
+    jsonschema.validate(instance=config, schema=SCHEMA)
+
+    # 1c. Image Generation
+    logger.info("Generating visual assets...")
+    for scene in config.get("scenes", []):
+        image_path = scene.get("image_path")
+        if image_path and not os.path.exists(image_path):
+            prompt = f"Educational illustration regarding: {scene.get('text')}"
+            generate_image_from_prompt(prompt, image_path)
+
+    # 2: Generate TTS audio clips
+    logger.info("Checking and generating voiceovers...")
+    generate_all_voiceovers(config)
+
+    # 3: Compile video
+    base_output_path = f"assets/exports/{project_id}.mp4"
+    os.makedirs(os.path.dirname(base_output_path), exist_ok=True)
+
+    canvas_formats = config.get("canvas_format", ["landscape"])
+    if isinstance(canvas_formats, str):
+        canvas_formats = [canvas_formats]
+
+    output_paths = []
+    for fmt in canvas_formats:
+        fmt_output_path = base_output_path.replace(".mp4", f"_{fmt}.mp4")
+        logger.info(f"Compiling video to {fmt_output_path}...")
+        compile_video(config, output_path=fmt_output_path, canvas_format=fmt)
+        output_paths.append(fmt_output_path)
+
+    # 4: Upload to platforms (if not skipped)
+    if not skip_upload:
+        platforms = config.get("platforms", ["youtube"])
+        metadata = config.get("youtube_metadata", {})
+        for platform in platforms:
+            upload_target = output_paths[0]
+            if platform in ["tiktok", "instagram"] and "portrait" in canvas_formats:
+                upload_target = next(
+                    (p for p in output_paths if "portrait" in p), upload_target
+                )
+            elif platform == "youtube" and "landscape" in canvas_formats:
+                upload_target = next(
+                    (p for p in output_paths if "landscape" in p), upload_target
+                )
+
+            logger.info(f"Initiating {platform} upload using {upload_target}...")
+            if platform == "youtube":
+                youtube_upload(upload_target, metadata)
+            elif platform == "tiktok":
+                tiktok_upload(upload_target, metadata)
+            elif platform == "instagram":
+                instagram_upload(upload_target, metadata)
+            elif platform == "twitter":
+                twitter_upload(upload_target, metadata)
+    else:
+        logger.info("Skipping uploads as requested.")
+
+    logger.info(
+        f"Pipeline Celery execution completed successfully for topic '{topic}'."
+    )
+    return {"status": "success", "topic": topic, "videos": output_paths}
+
+
+@celery_app.task(name="transition_order_status", soft_time_limit=60, time_limit=90)
+def transition_order_status(order_id: str, new_status: str):
+    logger.info(f"Transitioning order {order_id} to status {new_status}")
     try:
-        project_id = sanitize_topic(topic)
-
-        # 1a. Analytics Polling
-        analytics_data = fetch_platform_analytics(project_id)
-        feedback_summary = analytics_data.get("feedback_summary")
-
-        # 1b. Ingestion
-        raw_text = fetch_wikipedia_summary(topic)
-
-        # 1c. LLM Structure with Feedback Loop
-        config = generate_script_from_text(
-            raw_text, project_id=project_id, analytics_feedback=feedback_summary
-        )
-        jsonschema.validate(instance=config, schema=SCHEMA)
-
-        # 1c. Image Generation
-        logger.info("Generating visual assets...")
-        for scene in config.get("scenes", []):
-            image_path = scene.get("image_path")
-            if image_path and not os.path.exists(image_path):
-                prompt = f"Educational illustration regarding: {scene.get('text')}"
-                generate_image_from_prompt(prompt, image_path)
-
-        # 2: Generate TTS audio clips
-        logger.info("Checking and generating voiceovers...")
-        generate_all_voiceovers(config)
-
-        # 3: Compile video
-        base_output_path = f"assets/exports/{project_id}.mp4"
-        os.makedirs(os.path.dirname(base_output_path), exist_ok=True)
-
-        canvas_formats = config.get("canvas_format", ["landscape"])
-        if isinstance(canvas_formats, str):
-            canvas_formats = [canvas_formats]
-
-        output_paths = []
-        for fmt in canvas_formats:
-            fmt_output_path = base_output_path.replace(".mp4", f"_{fmt}.mp4")
-            logger.info(f"Compiling video to {fmt_output_path}...")
-            compile_video(config, output_path=fmt_output_path, canvas_format=fmt)
-            output_paths.append(fmt_output_path)
-
-        # 4: Upload to platforms (if not skipped)
-        if not skip_upload:
-            platforms = config.get("platforms", ["youtube"])
-            metadata = config.get("youtube_metadata", {})
-            for platform in platforms:
-                upload_target = output_paths[0]
-                if platform in ["tiktok", "instagram"] and "portrait" in canvas_formats:
-                    upload_target = next(
-                        (p for p in output_paths if "portrait" in p), upload_target
-                    )
-                elif platform == "youtube" and "landscape" in canvas_formats:
-                    upload_target = next(
-                        (p for p in output_paths if "landscape" in p), upload_target
-                    )
-
-                logger.info(f"Initiating {platform} upload using {upload_target}...")
-                if platform == "youtube":
-                    youtube_upload(upload_target, metadata)
-                elif platform == "tiktok":
-                    tiktok_upload(upload_target, metadata)
-                elif platform == "instagram":
-                    instagram_upload(upload_target, metadata)
-                elif platform == "twitter":
-                    twitter_upload(upload_target, metadata)
-        else:
-            logger.info("Skipping uploads as requested.")
-
-        logger.info(
-            f"Pipeline Celery execution completed successfully for topic '{topic}'."
-        )
-        return {"status": "success", "topic": topic, "videos": output_paths}
+        # Simulate network request to an upstream ERP or DB
+        import time
+        time.sleep(1)
+        return {"status": "success", "order_id": order_id, "new_status": new_status}
     except SoftTimeLimitExceeded:
-        logger.error(
-            f"Pipeline Celery task timed out for topic '{topic}'. FFmpeg or Network API hung."
-        )
-        return {
-            "status": "error",
-            "message": "Task execution exceeded soft time limit.",
-        }
+        logger.error(f"Task transition_order_status timed out for order '{order_id}'.")
+        return {"status": "error", "message": "Task execution exceeded soft time limit."}
     except Exception as e:
-        logger.error(f"Pipeline Celery task failed: {e}", exc_info=True)
+        logger.error(f"Task transition_order_status failed: {e}", exc_info=True)
         return {"status": "error", "message": str(e)}
