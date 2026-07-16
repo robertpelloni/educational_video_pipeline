@@ -154,3 +154,34 @@ def test_generate_video_endpoint_wrong_type_boolean():
 
     assert response.status_code == 200
     mock_delay.assert_called_once_with("Valid Topic", True)
+
+
+@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+def test_submit_video_endpoint_empty_topic():
+    from src.api_router import limiter
+    limiter.reset()
+    payload = {"topic": "   ", "skip_upload": True}
+    response = client.post("/submit", json=payload, headers=auth_headers)
+    assert response.status_code == 200
+    assert "Random Educational Topic" in response.json()["message"]
+
+@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+def test_submit_video_endpoint_missing_payload():
+    from src.api_router import limiter
+    limiter.reset()
+    response = client.post("/submit", json={}, headers=auth_headers)
+    assert response.status_code == 200
+    assert "Random Educational Topic" in response.json()["message"]
+
+@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+def test_submit_video_endpoint_rate_limiting():
+    from src.api_router import limiter
+    limiter.reset()
+
+    payload = {"topic": "Rate Limit Test", "skip_upload": True}
+    for _ in range(5):
+        response = client.post("/submit", json=payload, headers=auth_headers)
+        assert response.status_code == 200
+
+    response = client.post("/submit", json=payload, headers=auth_headers)
+    assert response.status_code == 429

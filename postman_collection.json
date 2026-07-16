@@ -326,6 +326,57 @@
           }
         }
       ]
+    },
+    {
+      "name": "Submit Video",
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            {
+              "key": "password",
+              "value": "{{API_PASSWORD}}",
+              "type": "string"
+            },
+            {
+              "key": "username",
+              "value": "{{API_USERNAME}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": \"Space Exploration\",\n  \"skip_upload\": true\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/submit",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "submit"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
     }
   ],
   "variable": [

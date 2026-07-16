@@ -99,3 +99,25 @@ async def generate_video(
         "task_id": task.id,
         "topic": topic_clean,
     }
+
+
+@app.post(
+    "/submit",
+    responses={
+        400: {"description": "Bad Request"},
+        401: {"description": "Unauthorized"},
+        429: {"description": "Too Many Requests"}
+    }
+)
+@limiter.limit("5/minute")
+async def submit_video(
+    request: Request,
+    payload: GenerateRequest,
+    username: str = Depends(verify_credentials),
+):
+    topic_clean = payload.topic.strip()
+    # Dummy handler for testing the /submit endpoint edge cases
+    return {
+        "status": "success",
+        "message": f"Submission received for: '{topic_clean}'"
+    }

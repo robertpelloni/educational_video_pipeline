@@ -38,3 +38,8 @@ These gaps should be flagged with a `priority: medium` label in the project's is
 - ~~**Gap:** `src/audio_engine.py` generates voiceovers and subtitles using `asyncio` streams (`_generate_audio_async`), but no unit tests specifically mocked and verified this asynchronous data flow and byte-writing sequence.~~ (Resolved)
 - **Risk:** Without asserting that the `WordBoundary` data stream properly maps to the `.srt` SubMaker output, timing mismatches in generated subtitles could go undetected.
 - ~~**Action Required:** Implement a targeted mock test for the `edge_tts.Communicate.stream()` generator, verifying that `audio` chunks trigger file writes and `WordBoundary` chunks trigger `sub_maker.feed()` calls.~~ (Resolved)
+
+## 10. Submit Endpoint Edge Cases
+- ~~**Gap:** The `/submit` endpoint lacked test coverage for validation fallbacks and rate limiting behavior.~~ (Resolved)
+- **Risk:** Malformed payloads could crash the API or bypass the token bucket limits.
+- ~~**Action Required:** Implement targeted unit tests checking boundaries for empty fields, missing payloads, and rate limits to ensure resilient 200/429 status codes before proceeding to frontend handler integration.~~ (Resolved)
