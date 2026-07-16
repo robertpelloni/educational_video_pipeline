@@ -22,7 +22,7 @@ module.exports = defineConfig({
       stderr: 'pipe',
       env: {
         API_USERNAME: 'admin',
-        API_PASSWORD: 'supersecretpipeline'
+        API_PASSWORD: 'local_dev_password'
       }
     }
   ],

@@ -390,7 +390,7 @@
     },
     {
       "key": "API_PASSWORD",
-      "value": "supersecretpipeline"
+      "value": "local_dev_password"
     }
   ]
 }

@@ -8,18 +8,18 @@ client = TestClient(app)
 
 # Default valid credentials for tests
 auth_headers = {
-    "Authorization": "Basic YWRtaW46c3VwZXJzZWNyZXRwaXBlbGluZQ=="
-}  # admin:supersecretpipeline
+    "Authorization": "Basic YWRtaW46bG9jYWxfZGV2X3Bhc3N3b3Jk"
+}  # admin:local_dev_password
 
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_unauthorized():
     payload = {"topic": "Black hole"}
     response = client.post("/generate", json=payload)
     assert response.status_code == 401
 
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_success():
     payload = {"topic": "Black hole", "skip_upload": True}
 
@@ -34,7 +34,7 @@ def test_generate_video_endpoint_success():
         mock_delay.assert_called_once_with("Black hole", True)
 
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_empty_topic():
     payload = {"topic": "   ", "skip_upload": True}
 
@@ -46,7 +46,7 @@ def test_generate_video_endpoint_empty_topic():
     assert response.json()["topic"] == "Random Educational Topic"
 
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_missing_payload():
     with patch("src.api_router.run_pipeline_task.delay") as mock_delay:
         mock_delay.return_value.id = "test-task-id-123"
@@ -68,7 +68,7 @@ def test_generate_video_endpoint_missing_server_config():
     assert "Server configuration error" in response.json()["detail"]
 
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_invalid_credentials():
     """
     Tests edge case where basic auth headers are provided but the credentials are bad.
@@ -82,7 +82,7 @@ def test_generate_video_endpoint_invalid_credentials():
     assert "Incorrect username or password" in response.json()["detail"]
 
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_celery_broker_failure():
     """
     Tests edge case where the message broker (Redis) is down or Celery fails to queue the task.
@@ -102,7 +102,7 @@ def test_generate_video_endpoint_celery_broker_failure():
             client.post("/generate", json=payload, headers=auth_headers)
 
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_rate_limiting():
     from src.api_router import limiter
 
@@ -125,7 +125,7 @@ def test_generate_video_endpoint_rate_limiting():
         response = client.post("/generate", json=payload, headers=auth_headers)
         assert response.status_code == 429
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_topic_too_long():
     from src.api_router import limiter
     limiter.reset()
@@ -141,7 +141,7 @@ def test_generate_video_endpoint_topic_too_long():
     assert len(response.json()["topic"]) == 255
     assert response.json()["topic"] == "A" * 255
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_wrong_type_boolean():
     from src.api_router import limiter
     limiter.reset()
@@ -156,7 +156,7 @@ def test_generate_video_endpoint_wrong_type_boolean():
     mock_delay.assert_called_once_with("Valid Topic", True)
 
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_submit_video_endpoint_empty_topic():
     from src.api_router import limiter
     limiter.reset()
@@ -165,7 +165,7 @@ def test_submit_video_endpoint_empty_topic():
     assert response.status_code == 200
     assert "Random Educational Topic" in response.json()["message"]
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_submit_video_endpoint_missing_payload():
     from src.api_router import limiter
     limiter.reset()
@@ -173,7 +173,7 @@ def test_submit_video_endpoint_missing_payload():
     assert response.status_code == 200
     assert "Random Educational Topic" in response.json()["message"]
 
-@patch.dict(os.environ, {"API_PASSWORD": "supersecretpipeline"})
+@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_submit_video_endpoint_rate_limiting():
     from src.api_router import limiter
     limiter.reset()
