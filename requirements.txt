@@ -1,0 +1,17 @@
+edge-tts
+google-api-python-client
+google-auth-oauthlib
+pytest
+jsonschema
+flake8
+black
+ffmpeg-python
+fastapi
+uvicorn
+httpx
+celery
+redis
+tweepy>=4.14.0
+openai>=1.0.0
+instructor>=1.0.0
+slowapi
