@@ -15,3 +15,5 @@ tweepy>=4.14.0
 openai>=1.0.0
 instructor>=1.0.0
 slowapi
+pillow
+pystray

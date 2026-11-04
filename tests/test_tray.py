@@ -77,3 +77,11 @@ def test_build_tray_icon_mocked():
         icon = build_tray_icon()
         assert mock_pystray.Icon.called
         assert icon is not None
+
+
+def test_create_tray_image_import_error():
+    with patch.dict(
+        sys.modules, {"PIL": None, "PIL.Image": None, "PIL.ImageDraw": None}
+    ):
+        img = create_tray_image()
+        assert img is None

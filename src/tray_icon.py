@@ -17,18 +17,22 @@ logger = logging.getLogger(__name__)
 
 def create_tray_image():
     """Generates a dynamic 64x64 RGBA PIL icon with an artistic video slate/play theme."""
-    from PIL import Image, ImageDraw
+    try:
+        from PIL import Image, ImageDraw
 
-    image = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image)
+        image = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(image)
 
-    # Outer rounded circle / backdrop
-    draw.ellipse(
-        (4, 4, 60, 60), fill=(26, 35, 126, 255), outline=(63, 81, 181, 255), width=2
-    )
-    # Inner Play triangle
-    draw.polygon([(24, 18), (24, 46), (48, 32)], fill=(0, 229, 255, 255))
-    return image
+        # Outer rounded circle / backdrop
+        draw.ellipse(
+            (4, 4, 60, 60), fill=(26, 35, 126, 255), outline=(63, 81, 181, 255), width=2
+        )
+        # Inner Play triangle
+        draw.polygon([(24, 18), (24, 46), (48, 32)], fill=(0, 229, 255, 255))
+        return image
+    except ImportError:
+        logger.warning("Pillow not installed. Unable to create graphical tray icon.")
+        return None
 
 
 def kill_process_by_pattern(patterns):
