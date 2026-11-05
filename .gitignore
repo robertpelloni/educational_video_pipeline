@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+.pytest_cache/
+client_secrets.json
+token.json
+output.mp4
+final_video.mp4
+
+frontend/test-results/
+
+# Redis Dumps
+dump.rdb
+
+# Logs
+uvicorn.log
+*.log
+
+# Scratch scripts
+update_postman.py
+update_postman_boundaries.py
+export_openapi.py
+test_schemas.py
