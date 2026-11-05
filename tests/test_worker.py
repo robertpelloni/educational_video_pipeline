@@ -34,7 +34,6 @@ def test_sanitize_topic_boundaries():
     assert len(sanitized) == 50
     assert sanitized == "a" * 50
 
-
 def test_async_queue_wrapper_exception_handling():
     from src.worker import async_queue_wrapper
 
@@ -49,7 +48,6 @@ def test_async_queue_wrapper_exception_handling():
     @async_queue_wrapper
     def mock_task_timeout():
         from celery.exceptions import SoftTimeLimitExceeded
-
         raise SoftTimeLimitExceeded("Timeout")
 
     assert mock_task_success() == {"status": "success"}

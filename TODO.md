@@ -2,17 +2,24 @@
 
 ## Immediate Action Items
 
-### Completed Items
+### Code Refactoring & Logic Expansion
 - [x] **Caption Generation**: Generate text subtitles (`.srt` files) natively alongside the TTS output to pass to YouTube, or bake them visually into the video feed.
 - [x] **Canvas Layout Fix**: Update `video_engine.py` to enforce crop/resize metrics depending on `canvas_format` (portrait vs landscape) instead of relying on the source image size directly.
 - [x] **Audio Mix Customization**: Abstract the hard-coded `0.15` and `0.12` ducking volumes into a mathematically sound decibel attenuation curve to prevent peaking.
-- [x] **Desktop System Tray Daemon**: Implemented `src/tray_icon.py` supporting Open Dashboard, Service Health check, Restart Services, and Graceful Server Teardown.
-- [x] **Unified Dashboard UI**: Re-architected `/frontend` into a consolidated single-page operations hub featuring real-time health ribbon, autonomous generation studio, story branching web player, task execution monitor, cross-platform analytics inspector, and ERP simulator.
-- [x] **Dynamic Auth Handshake**: Phase 7 token-refresh handshake intercepting 401s smoothly without terminating active background Celery processors.
-- [x] **REST API Expansion**: Implemented `/status`, `/auth/verify`, `/tasks/{task_id}`, `/orders`, `/validate-config`, and `/analytics/{project_id}` endpoints.
-- [x] **Service Automation Scripts**: Created modern `start_services.sh` and `stop_services.sh` with process cleanup and nondestructive backups.
 
-### Future Enhancements & Optimization Items
-- [ ] **Streaming Progress Websockets**: Upgrade task status polling from HTTP interval requests to a bidirectional FastAPI WebSocket endpoint.
-- [ ] **Audio Preview Synthesis**: Add a quick 3-second audio snippet audition in the UI before full video compilation.
-- [ ] **Custom Watermarking Node**: Add configurable PNG logo overlay position in the FFmpeg filter graph.
+### Testing & Quality Assurance
+- [x] **Integration Tests**: Expand `tests/` with a full mock run of the `main.py` entrypoint.
+- [x] **Asset Validation Check**: Ensure image bounds/aspect ratios are verified during the `config.py` schema checks.
+- [x] **Linting & Formatting**: Integrate `flake8` or `black` for standardized codebase formatting and PEP8 adherence.
+
+### CI/CD & Orchestration (Near-Term)
+- [x] **GitHub Actions Setup**: Create `.github/workflows/tests.yml` to automatically run `pytest` upon PRs.
+- [x] **Logging Hooks**: Replace standard `print()` statements throughout the engines with the Python `logging` module. Configure different log levels (INFO, DEBUG, ERROR) to pipe logs to file storage or DataDog.
+- [x] **Containerization**: Create an initial `Dockerfile` setting up Python 3.12, system dependencies (like FFmpeg headers), and copying `src/` to ensure isolated execution runs.
+
+### Documentation Governance
+- [x] Initialize `VISION.md` to break down the user-satisfaction design per the autonomy directive.
+- [x] Initialize `DEPLOY.md` outlining API key procurement for local environments.
+- [x] Initialize `CHANGELOG.md` to track global version string increments.
+- [x] Initialize `IDEAS.md` for aggressive pivots and feature expansion tracking.
+- [x] Initialize `MEMORY.md` for ongoing internal architectural observations.

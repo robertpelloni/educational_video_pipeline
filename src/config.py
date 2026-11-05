@@ -97,9 +97,7 @@ def load_config(file_path):
 
     # Dynamically resolve background music
     if config.get("background_music"):
-        config["background_music"] = os.path.join(
-            config_dir, config["background_music"]
-        )
+        config["background_music"] = os.path.join(config_dir, config["background_music"])
         if not os.path.exists(config["background_music"]):
             raise FileNotFoundError(
                 f"Configuration error: Background music asset not found at "

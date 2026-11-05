@@ -126,6 +126,7 @@ def test_load_config_missing_image_asset(tmp_path):
         load_config(str(config_file))
 
 
+
 def test_load_config_missing_voiceover_asset_resolves_path(tmp_path):
     config_data = {
         "project_id": "test_001",
@@ -158,7 +159,6 @@ def test_load_config_missing_voiceover_asset_resolves_path(tmp_path):
     # Should NOT raise FileNotFoundError anymore, should just resolve path
     parsed = load_config(str(config_file))
     assert parsed["scenes"][0]["voiceover_path"].endswith("non_existent_audio.mp3")
-
 
 def test_load_config_missing_background_music(tmp_path):
     config_data = {

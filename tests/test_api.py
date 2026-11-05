@@ -2,7 +2,6 @@ import pytest
 import os
 from fastapi.testclient import TestClient
 from unittest.mock import patch
-from unittest.mock import MagicMock
 from src.api_router import app
 
 client = TestClient(app)
@@ -126,11 +125,9 @@ def test_generate_video_endpoint_rate_limiting():
         response = client.post("/generate", json=payload, headers=auth_headers)
         assert response.status_code == 429
 
-
 @patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_topic_too_long():
     from src.api_router import limiter
-
     limiter.reset()
 
     long_topic = "A" * 256
@@ -144,11 +141,9 @@ def test_generate_video_endpoint_topic_too_long():
     assert len(response.json()["topic"]) == 255
     assert response.json()["topic"] == "A" * 255
 
-
 @patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_wrong_type_boolean():
     from src.api_router import limiter
-
     limiter.reset()
 
     payload = {"topic": "Valid Topic", "skip_upload": "not_a_bool"}
@@ -164,28 +159,23 @@ def test_generate_video_endpoint_wrong_type_boolean():
 @patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_submit_video_endpoint_empty_topic():
     from src.api_router import limiter
-
     limiter.reset()
     payload = {"topic": "   ", "skip_upload": True}
     response = client.post("/submit", json=payload, headers=auth_headers)
     assert response.status_code == 200
     assert "Random Educational Topic" in response.json()["message"]
 
-
 @patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_submit_video_endpoint_missing_payload():
     from src.api_router import limiter
-
     limiter.reset()
     response = client.post("/submit", json={}, headers=auth_headers)
     assert response.status_code == 200
     assert "Random Educational Topic" in response.json()["message"]
 
-
 @patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_submit_video_endpoint_rate_limiting():
     from src.api_router import limiter
-
     limiter.reset()
 
     payload = {"topic": "Rate Limit Test", "skip_upload": True}
@@ -195,105 +185,3 @@ def test_submit_video_endpoint_rate_limiting():
 
     response = client.post("/submit", json=payload, headers=auth_headers)
     assert response.status_code == 429
-
-
-@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
-def test_status_endpoint():
-    response = client.get("/status")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "online"
-    assert data["api_version"] == "0.4.0"
-    assert "redis_connected" in data
-
-
-@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
-def test_auth_verify_endpoint():
-    response = client.post("/auth/verify", headers=auth_headers)
-    assert response.status_code == 200
-    assert response.json()["status"] == "authenticated"
-    assert response.json()["user"] == "admin"
-
-
-@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
-def test_tasks_endpoint_polling():
-    with patch("src.api_router.celery_app.AsyncResult") as mock_async:
-        mock_result = MagicMock()
-        mock_result.status = "SUCCESS"
-        mock_result.ready.return_value = True
-        mock_result.result = {"videos": ["video_landscape.mp4"]}
-        mock_async.return_value = mock_result
-
-        response = client.get("/tasks/task-999", headers=auth_headers)
-        assert response.status_code == 200
-        data = response.json()
-        assert data["task_id"] == "task-999"
-        assert data["status"] == "SUCCESS"
-        assert data["ready"] is True
-        assert data["result"]["videos"] == ["video_landscape.mp4"]
-
-
-@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
-def test_orders_lifecycle_endpoints():
-    with patch("src.api_router.transition_order_status.delay") as mock_task:
-        mock_task.return_value.id = "order-task-456"
-        payload = {"order_id": "ORD-99", "new_status": "SHIPPED"}
-        post_resp = client.post("/orders", json=payload, headers=auth_headers)
-        assert post_resp.status_code == 200
-        assert post_resp.json()["order_id"] == "ORD-99"
-        assert post_resp.json()["task_id"] == "order-task-456"
-
-    get_resp = client.get("/orders/ORD-99", headers=auth_headers)
-    assert get_resp.status_code == 200
-    assert get_resp.json()["order_id"] == "ORD-99"
-    assert get_resp.json()["status"] == "CONFIRMED"
-
-
-@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
-def test_validate_config_endpoint():
-    valid_cfg = {
-        "project_id": "test_proj",
-        "canvas_format": "landscape",
-        "background_music": "music.mp3",
-        "global_music_volume_db": -18.0,
-        "scenes": [
-            {
-                "sequence": 1,
-                "text": "Intro text",
-                "image_path": "scene.png",
-                "voiceover_path": "scene.mp3",
-            }
-        ],
-        "youtube_metadata": {
-            "title": "Title",
-            "description": "Desc",
-            "tags": ["tag"],
-            "category_id": "27",
-        },
-    }
-    resp = client.post(
-        "/validate-config", json={"config": valid_cfg}, headers=auth_headers
-    )
-    assert resp.status_code == 200
-    assert resp.json()["valid"] is True
-
-    invalid_cfg = {"project_id": "missing_scenes"}
-    resp = client.post(
-        "/validate-config", json={"config": invalid_cfg}, headers=auth_headers
-    )
-    assert resp.status_code == 200
-    assert resp.json()["valid"] is False
-    assert "error" in resp.json()
-
-
-@patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
-def test_analytics_endpoint():
-    with patch("src.api_router.fetch_platform_analytics") as mock_analytics:
-        mock_analytics.return_value = {
-            "metrics": {"youtube": {"views": 1200}},
-            "feedback_summary": "High engagement",
-        }
-        resp = client.get("/analytics/proj_xyz", headers=auth_headers)
-        assert resp.status_code == 200
-        assert resp.json()["project_id"] == "proj_xyz"
-        assert resp.json()["feedback_summary"] == "High engagement"

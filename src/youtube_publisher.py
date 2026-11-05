@@ -88,12 +88,9 @@ def upload_video(video_path, metadata):
             logger.error(f"Network exception during YouTube upload chunk: {e}")
             retry_count += 1
             if retry_count > max_retries:
-                raise RuntimeError(
-                    f"YouTube upload failed after {max_retries} retries."
-                ) from e
+                raise RuntimeError(f"YouTube upload failed after {max_retries} retries.") from e
             import time
-
-            time.sleep(2**retry_count)
+            time.sleep(2 ** retry_count)
 
     logger.info(f"Upload Successful! Video ID: {response['id']}")
     return response["id"]

@@ -149,7 +149,6 @@ def test_main_pipeline_skip_upload():
         # Verify upload was skipped
         mock_youtube_upload.assert_not_called()
 
-
 @patch("main.os.path.exists", return_value=False)
 def test_main_pipeline_empty_topic_sys_exit(mock_exists):
     """

@@ -45,25 +45,19 @@ def async_queue_wrapper(func):
     boundary for asynchronous queues.
     """
     import functools
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except SoftTimeLimitExceeded:
-            logger.error(
-                f"Task {func.__name__} timed out. Celery SoftTimeLimitExceeded caught."
-            )
+            logger.error(f"Task {func.__name__} timed out. Celery SoftTimeLimitExceeded caught.")
             return {
                 "status": "error",
-                "message": "Task execution exceeded soft time limit.",
+                "message": "Task execution exceeded soft time limit."
             }
         except Exception as e:
-            logger.error(
-                f"Task {func.__name__} failed unexpectedly: {e}", exc_info=True
-            )
+            logger.error(f"Task {func.__name__} failed unexpectedly: {e}", exc_info=True)
             return {"status": "error", "message": str(e)}
-
     return wrapper
 
 
@@ -71,6 +65,7 @@ def async_queue_wrapper(func):
 redis_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 
 celery_app = Celery("video_pipeline", broker=redis_url, backend=redis_url)
+
 
 
 @celery_app.task(name="run_video_pipeline_task", soft_time_limit=300, time_limit=360)
@@ -165,15 +160,11 @@ def transition_order_status(order_id: str, new_status: str):
     try:
         # Simulate network request to an upstream ERP or DB
         import time
-
         time.sleep(1)
         return {"status": "success", "order_id": order_id, "new_status": new_status}
     except SoftTimeLimitExceeded:
         logger.error(f"Task transition_order_status timed out for order '{order_id}'.")
-        return {
-            "status": "error",
-            "message": "Task execution exceeded soft time limit.",
-        }
+        return {"status": "error", "message": "Task execution exceeded soft time limit."}
     except Exception as e:
         logger.error(f"Task transition_order_status failed: {e}", exc_info=True)
         return {"status": "error", "message": str(e)}

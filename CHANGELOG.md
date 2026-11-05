@@ -1,28 +1,48 @@
 # CHANGELOG
 
 All notable changes to this project will be documented in this file.
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] - 2026-11-04
-### Added
-- **Unified Single-Page Operations Dashboard**: Redesigned `/frontend` UI into a consolidated high-value command center featuring live status ribbon, autonomous generation studio, story branching web player, task execution monitor, cross-platform analytics inspector, and ERP order event simulator.
-- **Interactive Auth Handshake Modal**: Phase 7 token-refresh handshake intercepting 401s smoothly without terminating active background Celery processors.
-- **Desktop System Tray Daemon (`src/tray_icon.py`)**: Persistent system tray icon with context menu actions (Open Dashboard, Check Status, Restart Services, and Graceful Server Teardown) with headless fallback mode.
-- **REST API Endpoints**:
-  - `GET /status` for live health checks.
-  - `POST /auth/verify` for credential validation.
-  - `GET /tasks/{task_id}` for polling asynchronous Celery task status and outputs.
-  - `POST /orders` and `GET /orders/{order_id}` for ERP order state transition simulations.
-  - `POST /validate-config` for schema validation dry-runs.
-  - `GET /analytics/{project_id}` for cross-platform analytics metrics.
-- **Service Management Scripts**: Modernized `start_services.sh` and created `stop_services.sh` with process cleanup and nondestructive backup `start_services.sh.bak`.
-- **Unit and Integration Tests**: Added test coverage in `tests/test_tray.py` and expanded `tests/test_api.py`, achieving 71 passing backend tests.
+## [0.3.0] - Unreleased
 
-## [0.3.0] - 2026-07-16
 ### Added
-- Initial modular pipeline architecture with moviepy to ffmpeg-python migration.
-- Edge-TTS speech and subtitle generation with WordBoundary parsing.
-- Multi-platform publisher modules (YouTube, TikTok, Instagram, Twitter).
-- Asynchronous Celery worker and Redis broker integration.
-- Playwright E2E testing framework.
+- Phase 6: Implemented mid-stream interactive quizzes within the React web player and `llm_engine`.
+- Added comprehensive test suite targeting validation layer failure modes in `src/config.py` (JSONDecodeError, Schema ValidationError, Missing Assets).
+
+## [0.2.2] - 2026-07-11
+
+### Added
+- Phase 2: Hardware-accelerated rendering utilizing `ffmpeg-python` (replacing `moviepy`).
+- Phase 2: Implemented advanced video and audio crossfade transitions via `xfade` and `acrossfade`.
+- Phase 2: Implemented real-time subtitle overlays (`.srt`) in the FFmpeg render chain.
+- Phase 2: Added multi-layout rendering support, allowing generation of both landscape and portrait aspect ratios sequentially.
+- Phase 3: Content Ingestion Automation (`ingestion_engine`, `llm_engine`, `image_engine`).
+- Phase 4: CI/CD, Containerization, and Orchestration (`Dockerfile`, FastAPI server, Celery/Redis background worker).
+- Phase 4: scaffolded an interactive React application (`frontend/`) configured with Vite, providing a `useDataFetch` hook for triggering tasks via the FastAPI backend.
+- Phase 4: hardened Celery worker nodes by implementing `soft_time_limit` and `time_limit` parameters to prevent zombie processes during heavy FFmpeg loads.
+- Kubernetes deployment manifests (`k8s/`).
+- Phase 5: Multi-Platform Syndication Initialized.
+- Phase 5: Integrated real `requests` implementation for TikTok automated media uploading via the Content Posting API.
+- Phase 5: Integrated real `requests` implementation for Instagram Reels automated media uploading via the Facebook Graph API.
+- Phase 5: Integrated real `tweepy` implementation for X (Twitter) automated chunked media uploading.
+- Phase 5: Implemented analytics polling and LLM feedback loop to dynamically adjust generated scripts based on simulated cross-platform engagement metrics.
+- Added `IDEAS.md` and `MEMORY.md` to complete the core documentation governance standard.
+- Upgraded the LLM Engine (`src/llm_engine.py`) to utilize the `instructor` library and `pydantic`, forcing strict adherence to the project's JSON schema when generating video scripts via OpenAI `gpt-4o`.
+- Phase 6: Initialized interactive web player. Scaffolded React stub `InteractivePlayer.jsx` and introduced Pydantic `BranchChoice` arrays to allow LLM engines to map branching narratives.
+- Implemented `slowapi` rate limiting on the FastAPI backend (5 requests per minute) to protect the Celery queue from DoS attacks.
+- Added tests simulating HTTP 401 Unauthorized API responses from TikTok and Instagram to prevent worker crashing.
+- Added Playwright testing to boot the mock Vite server and test DOM element states, fulfilling all `TEST_GAPS_SUMMARY.md` milestones.
+
+## [0.1.0] - 2024-05-24
+
+### Added
+- Automated pipeline orchestration via `main.py`.
+- `src/config.py` for parsing JSON job schemas via `jsonschema`.
+- `src/audio_engine.py` wrapper for `edge-tts` text-to-speech generation.
+- `src/video_engine.py` utilizing `moviepy` for visual asset mapping, background audio ducking, and MP4 compositing.
+- `src/youtube_publisher.py` for resumable chunked video uploads via the YouTube Data API v3.
+- Comprehensive `tests/` directory covering schema validation and compilation logic.
+- Documentation mapping (`ROADMAP.md`, `TODO.md`, `VISION.md`, `DEPLOY.md`, `CHANGELOG.md`, `VERSION.md`).
+- GitHub Actions CI workflow (`.github/workflows/tests.yml`) to automatically test the pipeline on push/PR to `main`.

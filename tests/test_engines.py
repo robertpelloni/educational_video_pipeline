@@ -165,7 +165,6 @@ def test_compile_video_with_canvas_format_override(
     assert crop_kwargs.get("w") == 1080
     assert crop_kwargs.get("h") == 1920
 
-
 @patch("src.audio_engine.edge_tts.Communicate")
 @patch("src.audio_engine.edge_tts.SubMaker")
 @patch("builtins.open", new_callable=MagicMock)
@@ -185,7 +184,6 @@ def test_generate_voiceover_sync(mock_open, mock_submaker, mock_communicate):
     mock_submaker.return_value = mock_sub_instance
 
     from src.audio_engine import generate_voiceover
-
     with patch("src.audio_engine.os.makedirs"):
         generate_voiceover("Test text", "fake_output.mp3")
 
