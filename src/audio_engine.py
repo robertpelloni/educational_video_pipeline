@@ -23,7 +23,7 @@ async def _generate_audio_async(text, output_path, voice="en-US-ChristopherNeura
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":
                 file.write(chunk["data"])
-            elif chunk["type"] == "WordBoundary":
+            elif chunk["type"] in ("WordBoundary", "SentenceBoundary"):
                 sub_maker.feed(chunk)
 
     srt_output_path = os.path.splitext(output_path)[0] + ".srt"
