@@ -79,9 +79,18 @@ def compile_video(
             .filter("setsar", "1")  # Ensure square pixels
         )
 
-        # Overlay Subtitles
+        # Overlay Subtitles if file exists
         srt_file = os.path.splitext(audio_file)[0] + ".srt"
-        if os.path.exists(srt_file):
+        has_subtitles = os.path.exists(srt_file)
+        # Avoid empty srt files that crash libass if real file on disk
+        if has_subtitles and os.path.isfile(srt_file):
+            try:
+                if os.path.getsize(srt_file) == 0:
+                    has_subtitles = False
+            except OSError:
+                pass
+
+        if has_subtitles:
             v_stream = v_stream.filter("subtitles", srt_file)
 
         # Audio: Input voiceover
