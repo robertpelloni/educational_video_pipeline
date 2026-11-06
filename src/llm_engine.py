@@ -29,6 +29,10 @@ class Quiz(BaseModel):
 class Scene(BaseModel):
     sequence: int
     text: str = Field(description="The educational narration for this specific scene.")
+    visual_prompt: Optional[str] = Field(
+        default=None,
+        description="Detailed descriptive prompt for generating visual scene assets.",
+    )
     image_path: str = Field(
         description="Path to save the generated image. Use 'assets/images/{project_id}_scene_{sequence}.png'"
     )
@@ -136,6 +140,7 @@ def generate_script_from_text(
             {
                 "sequence": index,
                 "text": sentence,
+                "visual_prompt": f"Educational illustration regarding: {sentence}",
                 "image_path": f"assets/images/{project_id}_scene_{index}.png",
                 "voiceover_path": f"assets/audio/{project_id}_scene_{index}.mp3",
             }

@@ -30,6 +30,7 @@ def test_generate_script_schema_validation_fallback(mock_get_client):
     assert result["project_id"] == "test_001"
     assert len(result["scenes"]) == 2
     assert result["scenes"][0]["text"] == "This is the first test sentence."
+    assert "visual_prompt" in result["scenes"][0]
 
 
 @patch("src.llm_engine.get_llm_client")

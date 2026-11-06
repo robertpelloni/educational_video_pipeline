@@ -14,6 +14,7 @@ def test_schema_valid_config():
             {
                 "sequence": 1,
                 "text": "test scene",
+                "visual_prompt": "An educational diagram of the scene",
                 "image_path": "assets/images/1.png",
                 "voiceover_path": "assets/audio/1.mp3",
                 "choices": [{"label": "Next", "target_sequence": 2}],
