@@ -192,3 +192,33 @@ def test_generate_voiceover_sync(mock_open, mock_submaker, mock_communicate):
     # Verify file writes occurred
     assert mock_open.call_count == 2  # One for mp3, one for srt
     mock_sub_instance.feed.assert_called_once()
+
+
+@patch("src.audio_engine.edge_tts.Communicate")
+@patch("src.audio_engine.edge_tts.SubMaker")
+@patch("builtins.open", new_callable=MagicMock)
+def test_generate_voiceover_fallback_subtitle(
+    mock_open, mock_submaker, mock_communicate
+):
+    mock_comm_instance = MagicMock()
+
+    async def mock_stream():
+        yield {"type": "audio", "data": b"fake_audio_data"}
+
+    mock_comm_instance.stream.return_value = mock_stream()
+    mock_communicate.return_value = mock_comm_instance
+
+    # Mock empty string from SubMaker
+    mock_sub_instance = MagicMock()
+    mock_sub_instance.get_srt.return_value = ""
+    mock_submaker.return_value = mock_sub_instance
+
+    from src.audio_engine import generate_voiceover
+
+    with patch("src.audio_engine.os.makedirs"):
+        generate_voiceover("Test fallback text", "fake_output.mp3")
+
+    # Ensure write was called with fallback content containing the text
+    handle = mock_open.return_value.__enter__.return_value
+    write_calls = [call.args[0] for call in handle.write.mock_calls if call.args]
+    assert any("Test fallback text" in str(arg) for arg in write_calls)

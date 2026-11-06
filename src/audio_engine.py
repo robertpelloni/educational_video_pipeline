@@ -27,8 +27,17 @@ async def _generate_audio_async(text, output_path, voice="en-US-ChristopherNeura
                 sub_maker.feed(chunk)
 
     srt_output_path = os.path.splitext(output_path)[0] + ".srt"
+    srt_content = sub_maker.get_srt().strip()
+
+    # Validate that subtitle content is non-empty; if empty, provide a valid fallback block
+    if not srt_content:
+        logger.warning(
+            f"SubMaker generated empty subtitles for '{text[:30]}...'. Synthesizing fallback subtitle block."
+        )
+        srt_content = f"1\n00:00:00,000 --> 00:00:05,000\n{text}\n"
+
     with open(srt_output_path, "w", encoding="utf-8") as file:
-        file.write(sub_maker.get_srt())
+        file.write(srt_content)
 
 
 def generate_voiceover(text, output_path, voice="en-US-ChristopherNeural"):
