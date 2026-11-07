@@ -24,6 +24,7 @@ SCHEMA = {
                 "properties": {
                     "sequence": {"type": "integer"},
                     "text": {"type": "string"},
+                    "visual_prompt": {"type": ["string", "null"]},
                     "image_path": {"type": "string"},
                     "voiceover_path": {"type": "string"},
                     "choices": {

@@ -81,8 +81,10 @@ def main():
             for scene in config.get("scenes", []):
                 image_path = scene.get("image_path")
                 if image_path and not os.path.exists(image_path):
-                    # We use a simple prompt derived from the scene text for the image generator
-                    prompt = f"Educational illustration regarding: {scene.get('text')}"
+                    prompt = (
+                        scene.get("visual_prompt")
+                        or f"Educational illustration regarding: {scene.get('text')}"
+                    )
                     generate_image_from_prompt(prompt, image_path)
 
         else:

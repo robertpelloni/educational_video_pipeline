@@ -30,6 +30,7 @@ def test_generate_script_schema_validation_fallback(mock_get_client):
     assert result["project_id"] == "test_001"
     assert len(result["scenes"]) == 2
     assert result["scenes"][0]["text"] == "This is the first test sentence."
+    assert "visual_prompt" in result["scenes"][0]
 
 
 @patch("src.llm_engine.get_llm_client")
@@ -93,3 +94,12 @@ def test_generate_script_instructor_exception_fallback(mock_get_client):
     assert result["project_id"] == "test_exception"
     assert len(result["scenes"]) == 1
     assert result["scenes"][0]["text"] == "Fallback on exception."
+
+
+def test_generate_script_visual_prompt_alignment():
+    raw_text = "The mitochondria is the powerhouse of the cell."
+    result = generate_script_from_text(raw_text, project_id="bio_01")
+    scene = result["scenes"][0]
+    assert "visual_prompt" in scene
+    assert "mitochondria" in scene["visual_prompt"]
+    assert "diagrammatic labeling" in scene["visual_prompt"]
