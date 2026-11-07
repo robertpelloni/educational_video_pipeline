@@ -31,7 +31,11 @@ class Scene(BaseModel):
     text: str = Field(description="The educational narration for this specific scene.")
     visual_prompt: Optional[str] = Field(
         default=None,
-        description="Detailed descriptive prompt for generating visual scene assets.",
+        description=(
+            "Detailed descriptive prompt for generating visual scene assets. "
+            "Specify clear subject focal point, cinematic educational lighting, high clarity, "
+            "and avoidance of blurry artifacts or text watermarks."
+        ),
     )
     image_path: str = Field(
         description="Path to save the generated image. Use 'assets/images/{project_id}_scene_{sequence}.png'"
@@ -104,9 +108,10 @@ def generate_script_from_text(
             "You are an expert educational video scriptwriter and visual director. "
             "Your job is to parse raw text and structure it into an engaging sequence of scenes for a video. "
             "For each scene, craft a specific, high-detail 'visual_prompt' that directly aligns with "
-            "the narration 'text'. Visual prompts must specify clean composition, high clarity, clear focal "
-            "subjects, and consistent educational style (e.g., 'Detailed scientific diagram of [subject], "
-            "clear labeling, high contrast, 4k educational graphic, clean background')."
+            "the narration 'text'. Visual prompts must specify clean composition, cinematic lighting, "
+            "high clarity, clear focal subjects, consistent style anchors across sequential scenes, and "
+            "uncluttered backgrounds (e.g., 'Detailed scientific diagram of [subject], clear labeling, "
+            "cinematic educational lighting, high-contrast digital illustration, 4k, clean background')."
         )
         if analytics_feedback:
             system_prompt += f" Consider this feedback from previous videos to improve engagement: {analytics_feedback}"
@@ -143,7 +148,8 @@ def generate_script_from_text(
         clean_sentence = sentence.rstrip(".")
         prompt_str = (
             f"High-detail educational illustration depicting: {clean_sentence} "
-            "with clear diagrammatic labeling and crisp focal subject"
+            "with clear diagrammatic labeling, crisp focal subject, cinematic educational lighting, "
+            "high-contrast digital illustration, 4k resolution, clean uncluttered background"
         )
         scenes.append(
             {

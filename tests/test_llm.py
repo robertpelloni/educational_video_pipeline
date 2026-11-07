@@ -103,3 +103,5 @@ def test_generate_script_visual_prompt_alignment():
     assert "visual_prompt" in scene
     assert "mitochondria" in scene["visual_prompt"]
     assert "diagrammatic labeling" in scene["visual_prompt"]
+    assert "cinematic educational lighting" in scene["visual_prompt"]
+    assert "clean uncluttered background" in scene["visual_prompt"]
