@@ -94,3 +94,12 @@ def test_generate_script_instructor_exception_fallback(mock_get_client):
     assert result["project_id"] == "test_exception"
     assert len(result["scenes"]) == 1
     assert result["scenes"][0]["text"] == "Fallback on exception."
+
+
+def test_generate_script_visual_prompt_alignment():
+    raw_text = "The mitochondria is the powerhouse of the cell."
+    result = generate_script_from_text(raw_text, project_id="bio_01")
+    scene = result["scenes"][0]
+    assert "visual_prompt" in scene
+    assert "mitochondria" in scene["visual_prompt"]
+    assert "diagrammatic labeling" in scene["visual_prompt"]

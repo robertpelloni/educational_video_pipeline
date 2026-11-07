@@ -101,8 +101,12 @@ def generate_script_from_text(
     if client:
         # Real LLM Execution via Instructor
         system_prompt = (
-            "You are an expert educational video scriptwriter. "
-            "Your job is to parse raw text and structure it into an engaging sequence of scenes for a video."
+            "You are an expert educational video scriptwriter and visual director. "
+            "Your job is to parse raw text and structure it into an engaging sequence of scenes for a video. "
+            "For each scene, craft a specific, high-detail 'visual_prompt' that directly aligns with "
+            "the narration 'text'. Visual prompts must specify clean composition, high clarity, clear focal "
+            "subjects, and consistent educational style (e.g., 'Detailed scientific diagram of [subject], "
+            "clear labeling, high contrast, 4k educational graphic, clean background')."
         )
         if analytics_feedback:
             system_prompt += f" Consider this feedback from previous videos to improve engagement: {analytics_feedback}"
@@ -136,11 +140,16 @@ def generate_script_from_text(
 
     scenes = []
     for index, sentence in enumerate(sentences, start=1):
+        clean_sentence = sentence.rstrip(".")
+        prompt_str = (
+            f"High-detail educational illustration depicting: {clean_sentence} "
+            "with clear diagrammatic labeling and crisp focal subject"
+        )
         scenes.append(
             {
                 "sequence": index,
                 "text": sentence,
-                "visual_prompt": f"Educational illustration regarding: {sentence}",
+                "visual_prompt": prompt_str,
                 "image_path": f"assets/images/{project_id}_scene_{index}.png",
                 "voiceover_path": f"assets/audio/{project_id}_scene_{index}.mp3",
             }
