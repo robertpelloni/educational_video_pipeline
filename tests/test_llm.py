@@ -102,7 +102,7 @@ def test_generate_script_visual_prompt_alignment():
     scene = result["scenes"][0]
     assert "visual_prompt" in scene
     assert "mitochondria" in scene["visual_prompt"]
-    assert "Centrally framed educational presentation" in scene["visual_prompt"]
+    assert "Wide establishing shot" in scene["visual_prompt"]
     assert "uncluttered background composition" in scene["visual_prompt"]
 
 
@@ -129,3 +129,35 @@ def test_scene_visual_style_anchor_and_coherence():
         assert scene["negative_prompt"] == result["negative_prompt"]
         assert "visual_prompt" in scene
         assert len(scene["visual_prompt"]) > 20
+
+
+def test_style_preset_selection():
+    raw_text = "The Roman Colosseum was built of concrete and sand."
+    result = generate_script_from_text(
+        raw_text, project_id="rome_01", style_preset="historical_engraving"
+    )
+
+    assert "historical_engraving" not in result["visual_style_anchor"]
+    assert "copperplate engraving" in result["visual_style_anchor"]
+    assert "cross-hatching" in result["visual_style_anchor"]
+
+    for scene in result["scenes"]:
+        assert scene["visual_style_anchor"] == result["visual_style_anchor"]
+
+
+def test_camera_framing_directives_in_mock():
+    raw_text = (
+        "Neurons transmit electrochemical signals throughout the human body. "
+        "The axon terminal releases neurotransmitters across the synaptic gap. "
+        "Receptors on the dendrite bind these chemical messengers instantly. "
+        "Action potentials propagate along the myelin sheath rapidly."
+    )
+    result = generate_script_from_text(raw_text, project_id="neuro_01")
+    scenes = result["scenes"]
+    assert len(scenes) == 4
+
+    # Verify framing variations cycle properly through diverse camera scales
+    assert "Wide establishing shot" in scenes[0]["visual_prompt"]
+    assert "Medium macro focus" in scenes[1]["visual_prompt"]
+    assert "Detailed cutaway diagram cross-section" in scenes[2]["visual_prompt"]
+    assert "Cinematic low-angle educational view" in scenes[3]["visual_prompt"]

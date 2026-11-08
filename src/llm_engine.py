@@ -37,6 +37,25 @@ DEFAULT_NEGATIVE_PROMPT = (
     "mutated, extra limbs, poor anatomy, low quality, artifacts, noisy background"
 )
 
+STYLE_PRESETS = {
+    "scientific_schematic": DEFAULT_STYLE_ANCHOR,
+    "cinematic_documentary": (
+        "photorealistic BBC nature documentary cinematography, 35mm anamorphic lens, "
+        "natural golden hour rim lighting, shallow depth of field, authentic film grain, "
+        "hyper-detailed realistic textures, cinematic color grade"
+    ),
+    "historical_engraving": (
+        "classical 19th-century vintage copperplate engraving, intricate cross-hatching, "
+        "antique parchment texture, sepia monochrome palette, museum archival quality, "
+        "refined botanical and technical draftsmanship"
+    ),
+    "microscopic_render": (
+        "fluorescence confocal electron microscope scan, false-color luminescent emission, "
+        "extreme optical magnification, deep black background, volumetric glow, "
+        "sub-cellular structural clarity"
+    ),
+}
+
 
 class Scene(BaseModel):
     sequence: int
@@ -119,7 +138,10 @@ def get_llm_client():
 
 
 def generate_script_from_text(
-    raw_text: str, project_id: str = "auto_gen_001", analytics_feedback: str = None
+    raw_text: str,
+    project_id: str = "auto_gen_001",
+    analytics_feedback: str = None,
+    style_preset: Optional[str] = None,
 ) -> dict:
     """
     Generates a structured video script adhering to the pipeline schema using OpenAI and Instructor.
@@ -131,6 +153,8 @@ def generate_script_from_text(
 
     logger.info(f"Generating LLM script for project {project_id}...")
 
+    chosen_style_anchor = STYLE_PRESETS.get(style_preset, DEFAULT_STYLE_ANCHOR)
+
     client = get_llm_client()
 
     if client:
@@ -139,9 +163,10 @@ def generate_script_from_text(
             "You are an expert educational video scriptwriter and visual art director. "
             "Your task is to parse educational content into a visually coherent sequence of scenes. "
             "To maximize visual continuity: "
-            "1. Define a singular, cohesive 'visual_style_anchor' (medium, palette, lighting). "
-            "2. For each scene, craft a 'visual_prompt' describing subject and framing grounded in narration text. "
-            "3. Enforce the same 'visual_style_anchor' on every scene to guarantee stylistic harmony. "
+            f"1. Enforce this cohesive visual_style_anchor across all scenes: '{chosen_style_anchor}'. "
+            "2. For each scene, craft a 'visual_prompt' specifying camera framing (wide establishing shot, "
+            "macro focal view, or cross-section cutaway), dynamic studio lighting, and clear subject isolation. "
+            "3. Enforce the identical visual_style_anchor on every scene to guarantee stylistic harmony. "
             "4. Provide targeted 'negative_prompt' tokens to suppress text artifacts, watermarks, and blurry renders."
         )
         if analytics_feedback:
@@ -160,7 +185,13 @@ def generate_script_from_text(
                     },
                 ],
             )
-            return script.model_dump()
+            script_dict = script.model_dump()
+            # If user explicitly specified style_preset, ensure anchor is assigned
+            if style_preset:
+                script_dict["visual_style_anchor"] = chosen_style_anchor
+                for sc in script_dict.get("scenes", []):
+                    sc["visual_style_anchor"] = chosen_style_anchor
+            return script_dict
         except Exception as e:
             logger.error(
                 f"Instructor LLM generation failed: {e}. Falling back to mock parsing."
@@ -174,20 +205,27 @@ def generate_script_from_text(
     if not sentences:
         sentences = [raw_text[:100] + "..."]
 
+    framing_sequence = [
+        "Wide establishing shot, centered focal subject with clean isolation",
+        "Medium macro focus on key mechanism, volumetric studio side-lighting",
+        "Detailed cutaway diagram cross-section, crisp edge definition and clarity",
+        "Cinematic low-angle educational view, subtle depth of field and soft rim light",
+    ]
+
     scenes = []
     for index, sentence in enumerate(sentences, start=1):
         clean_sentence = sentence.rstrip(".")
-        # Construct grounded subject-specific scene visual prompt
+        framing = framing_sequence[(index - 1) % len(framing_sequence)]
         prompt_str = (
-            f"Centrally framed educational presentation depicting: {clean_sentence}. "
-            "Clear focal subject with crisp edges, balanced lighting, and uncluttered background composition"
+            f"{framing} depicting: {clean_sentence}. "
+            "Balanced exposure, high-contrast clarity, and uncluttered background composition"
         )
         scenes.append(
             {
                 "sequence": index,
                 "text": sentence,
                 "visual_prompt": prompt_str,
-                "visual_style_anchor": DEFAULT_STYLE_ANCHOR,
+                "visual_style_anchor": chosen_style_anchor,
                 "negative_prompt": DEFAULT_NEGATIVE_PROMPT,
                 "image_path": f"assets/images/{project_id}_scene_{index}.png",
                 "voiceover_path": f"assets/audio/{project_id}_scene_{index}.mp3",
@@ -199,7 +237,7 @@ def generate_script_from_text(
         "canvas_format": ["landscape", "portrait"],
         "background_music": "assets/music/default_background.mp3",
         "global_music_volume_db": -18.0,
-        "visual_style_anchor": DEFAULT_STYLE_ANCHOR,
+        "visual_style_anchor": chosen_style_anchor,
         "negative_prompt": DEFAULT_NEGATIVE_PROMPT,
         "platforms": ["youtube", "tiktok", "instagram", "twitter"],
         "scenes": scenes,
