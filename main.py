@@ -85,7 +85,18 @@ def main():
                         scene.get("visual_prompt")
                         or f"Educational illustration regarding: {scene.get('text')}"
                     )
-                    generate_image_from_prompt(prompt, image_path)
+                    style_anchor = scene.get("visual_style_anchor") or config.get(
+                        "visual_style_anchor"
+                    )
+                    negative_prompt = scene.get("negative_prompt") or config.get(
+                        "negative_prompt"
+                    )
+                    generate_image_from_prompt(
+                        prompt,
+                        image_path,
+                        negative_prompt=negative_prompt,
+                        style_anchor=style_anchor,
+                    )
 
         else:
             # Step 1: Parse and validate explicit file configuration

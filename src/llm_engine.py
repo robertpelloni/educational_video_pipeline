@@ -26,6 +26,18 @@ class Quiz(BaseModel):
     )
 
 
+DEFAULT_STYLE_ANCHOR = (
+    "hyper-detailed scientific educational digital illustration, crisp vector-like clean lines, "
+    "cinematic studio volumetric lighting, deep rich educational color palette, 8k resolution, "
+    "centered focal composition, clean modern textbook aesthetics"
+)
+
+DEFAULT_NEGATIVE_PROMPT = (
+    "text, watermark, logo, typography, blurry, fuzzy, oversaturated, deformed, disfigured, "
+    "mutated, extra limbs, poor anatomy, low quality, artifacts, noisy background"
+)
+
+
 class Scene(BaseModel):
     sequence: int
     text: str = Field(description="The educational narration for this specific scene.")
@@ -33,9 +45,20 @@ class Scene(BaseModel):
         default=None,
         description=(
             "Detailed descriptive prompt for generating visual scene assets. "
-            "Specify clear subject focal point, cinematic educational lighting, high clarity, "
-            "and avoidance of blurry artifacts or text watermarks."
+            "Describe the subject in explicit action, framing, and environment, tightly aligned "
+            "with the educational narration, without repeating general style anchors."
         ),
+    )
+    visual_style_anchor: Optional[str] = Field(
+        default=DEFAULT_STYLE_ANCHOR,
+        description=(
+            "Cohesive visual style anchor shared across all scenes in this project "
+            "(e.g., artistic medium, color palette, lighting treatment, aesthetic texture)."
+        ),
+    )
+    negative_prompt: Optional[str] = Field(
+        default=DEFAULT_NEGATIVE_PROMPT,
+        description="Negative prompt tokens to suppress text, watermarks, deformities, and artifacts.",
     )
     image_path: str = Field(
         description="Path to save the generated image. Use 'assets/images/{project_id}_scene_{sequence}.png'"
@@ -71,6 +94,14 @@ class VideoScript(BaseModel):
     ] = Field(default=["landscape", "portrait"])
     background_music: str = Field(default="assets/music/default_background.mp3")
     global_music_volume_db: float = Field(default=-18.0)
+    visual_style_anchor: Optional[str] = Field(
+        default=DEFAULT_STYLE_ANCHOR,
+        description="Global unified visual style anchor enforced across all scenes.",
+    )
+    negative_prompt: Optional[str] = Field(
+        default=DEFAULT_NEGATIVE_PROMPT,
+        description="Global negative prompt tokens for image synthesis.",
+    )
     platforms: List[Literal["youtube", "tiktok", "instagram", "twitter"]] = Field(
         default=["youtube", "tiktok", "instagram", "twitter"]
     )
@@ -105,13 +136,13 @@ def generate_script_from_text(
     if client:
         # Real LLM Execution via Instructor
         system_prompt = (
-            "You are an expert educational video scriptwriter and visual director. "
-            "Your job is to parse raw text and structure it into an engaging sequence of scenes for a video. "
-            "For each scene, craft a specific, high-detail 'visual_prompt' that directly aligns with "
-            "the narration 'text'. Visual prompts must specify clean composition, cinematic lighting, "
-            "high clarity, clear focal subjects, consistent style anchors across sequential scenes, and "
-            "uncluttered backgrounds (e.g., 'Detailed scientific diagram of [subject], clear labeling, "
-            "cinematic educational lighting, high-contrast digital illustration, 4k, clean background')."
+            "You are an expert educational video scriptwriter and visual art director. "
+            "Your task is to parse educational content into a visually coherent sequence of scenes. "
+            "To maximize visual continuity: "
+            "1. Define a singular, cohesive 'visual_style_anchor' (medium, palette, lighting). "
+            "2. For each scene, craft a 'visual_prompt' describing subject and framing grounded in narration text. "
+            "3. Enforce the same 'visual_style_anchor' on every scene to guarantee stylistic harmony. "
+            "4. Provide targeted 'negative_prompt' tokens to suppress text artifacts, watermarks, and blurry renders."
         )
         if analytics_feedback:
             system_prompt += f" Consider this feedback from previous videos to improve engagement: {analytics_feedback}"
@@ -146,16 +177,18 @@ def generate_script_from_text(
     scenes = []
     for index, sentence in enumerate(sentences, start=1):
         clean_sentence = sentence.rstrip(".")
+        # Construct grounded subject-specific scene visual prompt
         prompt_str = (
-            f"High-detail educational illustration depicting: {clean_sentence} "
-            "with clear diagrammatic labeling, crisp focal subject, cinematic educational lighting, "
-            "high-contrast digital illustration, 4k resolution, clean uncluttered background"
+            f"Centrally framed educational presentation depicting: {clean_sentence}. "
+            "Clear focal subject with crisp edges, balanced lighting, and uncluttered background composition"
         )
         scenes.append(
             {
                 "sequence": index,
                 "text": sentence,
                 "visual_prompt": prompt_str,
+                "visual_style_anchor": DEFAULT_STYLE_ANCHOR,
+                "negative_prompt": DEFAULT_NEGATIVE_PROMPT,
                 "image_path": f"assets/images/{project_id}_scene_{index}.png",
                 "voiceover_path": f"assets/audio/{project_id}_scene_{index}.mp3",
             }
@@ -166,6 +199,8 @@ def generate_script_from_text(
         "canvas_format": ["landscape", "portrait"],
         "background_music": "assets/music/default_background.mp3",
         "global_music_volume_db": -18.0,
+        "visual_style_anchor": DEFAULT_STYLE_ANCHOR,
+        "negative_prompt": DEFAULT_NEGATIVE_PROMPT,
         "platforms": ["youtube", "tiktok", "instagram", "twitter"],
         "scenes": scenes,
         "youtube_metadata": {

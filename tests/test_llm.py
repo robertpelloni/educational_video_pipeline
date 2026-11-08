@@ -102,6 +102,30 @@ def test_generate_script_visual_prompt_alignment():
     scene = result["scenes"][0]
     assert "visual_prompt" in scene
     assert "mitochondria" in scene["visual_prompt"]
-    assert "diagrammatic labeling" in scene["visual_prompt"]
-    assert "cinematic educational lighting" in scene["visual_prompt"]
-    assert "clean uncluttered background" in scene["visual_prompt"]
+    assert "Centrally framed educational presentation" in scene["visual_prompt"]
+    assert "uncluttered background composition" in scene["visual_prompt"]
+
+
+def test_scene_visual_style_anchor_and_coherence():
+    raw_text = (
+        "Photosynthesis converts sunlight into chemical energy. "
+        "Chloroplasts inside the plant cell capture photons of light. "
+        "Glucose is then produced as an essential energy source."
+    )
+    result = generate_script_from_text(raw_text, project_id="plant_bio_01")
+
+    # Global config must contain cohesive style anchor and negative prompt
+    assert "visual_style_anchor" in result
+    assert "negative_prompt" in result
+    assert "hyper-detailed" in result["visual_style_anchor"]
+    assert "watermark" in result["negative_prompt"]
+
+    scenes = result["scenes"]
+    assert len(scenes) == 3
+
+    # Every scene must share the identical style anchor to ensure visual continuity
+    for scene in scenes:
+        assert scene["visual_style_anchor"] == result["visual_style_anchor"]
+        assert scene["negative_prompt"] == result["negative_prompt"]
+        assert "visual_prompt" in scene
+        assert len(scene["visual_prompt"]) > 20

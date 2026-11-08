@@ -17,6 +17,8 @@ SCHEMA = {
         },
         "background_music": {"type": "string"},
         "global_music_volume_db": {"type": "number"},
+        "visual_style_anchor": {"type": ["string", "null"]},
+        "negative_prompt": {"type": ["string", "null"]},
         "scenes": {
             "type": "array",
             "items": {
@@ -25,6 +27,8 @@ SCHEMA = {
                     "sequence": {"type": "integer"},
                     "text": {"type": "string"},
                     "visual_prompt": {"type": ["string", "null"]},
+                    "visual_style_anchor": {"type": ["string", "null"]},
+                    "negative_prompt": {"type": ["string", "null"]},
                     "image_path": {"type": "string"},
                     "voiceover_path": {"type": "string"},
                     "choices": {

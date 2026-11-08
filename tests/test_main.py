@@ -117,6 +117,8 @@ def test_main_pipeline_execution_with_topic(mock_exists):
         mock_generate_image.assert_called_once_with(
             "Educational illustration regarding: The heart is an organ.",
             "assets/images/heart_scene_1.png",
+            negative_prompt=None,
+            style_anchor=None,
         )
 
         mock_generate_audio.assert_called_once_with(mock_llm_config)
