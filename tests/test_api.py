@@ -22,7 +22,11 @@ def test_generate_video_endpoint_unauthorized():
 
 @patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
 def test_generate_video_endpoint_success():
-    payload = {"topic": "Black hole", "skip_upload": True}
+    payload = {
+        "topic": "Black hole",
+        "skip_upload": True,
+        "style_preset": "cinematic_documentary",
+    }
 
     with patch("src.api_router.run_pipeline_task.delay") as mock_delay:
         mock_delay.return_value.id = "test-task-id-123"
@@ -32,7 +36,7 @@ def test_generate_video_endpoint_success():
         assert response.json()["status"] == "success"
         assert response.json()["topic"] == "Black hole"
         assert response.json()["task_id"] == "test-task-id-123"
-        mock_delay.assert_called_once_with("Black hole", True)
+        mock_delay.assert_called_once_with("Black hole", True, "cinematic_documentary")
 
 
 @patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})
@@ -158,7 +162,7 @@ def test_generate_video_endpoint_wrong_type_boolean():
         response = client.post("/generate", json=payload, headers=auth_headers)
 
     assert response.status_code == 200
-    mock_delay.assert_called_once_with("Valid Topic", True)
+    mock_delay.assert_called_once_with("Valid Topic", True, None)
 
 
 @patch.dict(os.environ, {"API_PASSWORD": "local_dev_password"})

@@ -75,7 +75,7 @@ celery_app = Celery("video_pipeline", broker=redis_url, backend=redis_url)
 
 @celery_app.task(name="run_video_pipeline_task", soft_time_limit=300, time_limit=360)
 @async_queue_wrapper
-def run_pipeline_task(topic: str, skip_upload: bool):
+def run_pipeline_task(topic: str, skip_upload: bool, style_preset: str = None):
     """
     Executes the end-to-end video pipeline as a distributed Celery task.
     Implements a 5 minute soft timeout to catch FFmpeg hanging processes safely.
@@ -95,7 +95,10 @@ def run_pipeline_task(topic: str, skip_upload: bool):
 
     # 1c. LLM Structure with Feedback Loop
     config = generate_script_from_text(
-        raw_text, project_id=project_id, analytics_feedback=feedback_summary
+        raw_text,
+        project_id=project_id,
+        analytics_feedback=feedback_summary,
+        style_preset=style_preset,
     )
     jsonschema.validate(instance=config, schema=SCHEMA)
 

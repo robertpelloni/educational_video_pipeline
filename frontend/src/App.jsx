@@ -14,6 +14,7 @@ export function TooltipMarker({ text }) {
 function App() {
   const [topic, setTopic] = useState('');
   const [canvasFormats, setCanvasFormats] = useState({ landscape: true, portrait: false });
+  const [stylePreset, setStylePreset] = useState('scientific_schematic');
   const [platforms, setPlatforms] = useState({ youtube: true, tiktok: false, instagram: false, twitter: false });
   const [skipUpload, setSkipUpload] = useState(true);
   const [duckingDb, setDuckingDb] = useState(-18.0);
@@ -111,6 +112,7 @@ function App() {
 
     fetchData(topic, {
       skip_upload: skipUpload,
+      style_preset: stylePreset,
       canvas_format: selectedFormats.length ? selectedFormats : ['landscape'],
       platforms: selectedPlatforms.length ? selectedPlatforms : ['youtube'],
       customToken: customToken || undefined
@@ -232,6 +234,23 @@ function App() {
                   placeholder="e.g. The Circulatory System"
                   required
                 />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  Visual Style Paradigm & Coherence Preset
+                  <TooltipMarker text="Select an aesthetic style anchor applied cohesively across all scenes to ensure visual consistency and eliminate jarring scene cuts." />
+                </label>
+                <select
+                  className="form-input"
+                  value={stylePreset}
+                  onChange={(e) => setStylePreset(e.target.value)}
+                >
+                  <option value="scientific_schematic">Scientific Schematic (Crisp vector lines, volumetric lighting, clean textbook clarity)</option>
+                  <option value="cinematic_documentary">Cinematic Documentary (35mm anamorphic, natural rim lighting, subtle film grain)</option>
+                  <option value="historical_engraving">Historical Engraving (19th-century copperplate, intricate cross-hatching, antique sepia)</option>
+                  <option value="microscopic_render">Microscopic Render (Confocal microscope, false-color luminescence, sub-cellular glow)</option>
+                </select>
               </div>
 
               <div className="form-group">

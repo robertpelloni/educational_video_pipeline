@@ -61,3 +61,47 @@ def test_async_queue_wrapper_exception_handling():
     res_timeout = mock_task_timeout()
     assert res_timeout["status"] == "error"
     assert "exceeded soft time limit" in res_timeout["message"]
+
+
+@patch("src.worker.fetch_platform_analytics", return_value={"feedback_summary": None})
+@patch(
+    "src.worker.fetch_wikipedia_summary",
+    return_value="Photosynthesis converts light to energy.",
+)
+@patch("src.worker.generate_script_from_text")
+@patch("src.worker.generate_all_voiceovers")
+@patch("src.worker.compile_video")
+@patch("src.worker.os.path.exists", return_value=True)
+def test_worker_style_preset_propagation(
+    mock_exists,
+    mock_compile,
+    mock_voiceovers,
+    mock_gen_script,
+    mock_wiki,
+    mock_analytics,
+):
+    mock_gen_script.return_value = {
+        "project_id": "biology_101",
+        "canvas_format": ["landscape"],
+        "background_music": "assets/music/default_background.mp3",
+        "global_music_volume_db": -18.0,
+        "scenes": [],
+        "youtube_metadata": {
+            "title": "Title",
+            "description": "Desc",
+            "tags": [],
+            "category_id": "27",
+        },
+    }
+
+    result = run_pipeline_task(
+        "Biology 101", skip_upload=True, style_preset="microscopic_render"
+    )
+
+    assert result["status"] == "success"
+    mock_gen_script.assert_called_once_with(
+        "Photosynthesis converts light to energy.",
+        project_id="biology_101",
+        analytics_feedback=None,
+        style_preset="microscopic_render",
+    )
