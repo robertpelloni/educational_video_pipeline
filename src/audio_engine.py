@@ -20,12 +20,27 @@ async def _generate_audio_async(text, output_path, voice="en-US-ChristopherNeura
     communicate = edge_tts.Communicate(text, voice)
 
     sub_maker = edge_tts.SubMaker()
+    word_boundary_seen = False
+    buffered_sentence_chunks = []
+
     with open(output_path, "wb") as file:
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":
                 file.write(chunk["data"])
-            elif chunk["type"] in ("WordBoundary", "SentenceBoundary"):
+            elif chunk["type"] == "WordBoundary":
+                word_boundary_seen = True
                 sub_maker.feed(chunk)
+            elif chunk["type"] == "SentenceBoundary":
+                # Buffer sentence boundary in case word boundaries are absent from TTS stream
+                buffered_sentence_chunks.append(chunk)
+
+    # If no fine-grained WordBoundary chunks were emitted, feed SentenceBoundaries as fallback
+    if not word_boundary_seen and buffered_sentence_chunks:
+        logger.debug(
+            "No WordBoundary chunks received; falling back to SentenceBoundary chunks."
+        )
+        for s_chunk in buffered_sentence_chunks:
+            sub_maker.feed(s_chunk)
 
     srt_output_path = os.path.splitext(output_path)[0] + ".srt"
     srt_content = sub_maker.get_srt().strip()

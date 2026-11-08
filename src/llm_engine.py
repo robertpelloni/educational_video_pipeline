@@ -164,10 +164,11 @@ def generate_script_from_text(
             "Your task is to parse educational content into a visually coherent sequence of scenes. "
             "To maximize visual continuity: "
             f"1. Enforce this cohesive visual_style_anchor across all scenes: '{chosen_style_anchor}'. "
-            "2. For each scene, craft a 'visual_prompt' specifying camera framing (wide establishing shot, "
+            "2. Maintain strict subject identity and visual continuity across scenes referencing the topic entity. "
+            "3. For each scene, craft a 'visual_prompt' specifying camera framing (wide establishing shot, "
             "macro focal view, or cross-section cutaway), dynamic studio lighting, and clear subject isolation. "
-            "3. Enforce the identical visual_style_anchor on every scene to guarantee stylistic harmony. "
-            "4. Provide targeted 'negative_prompt' tokens to suppress text artifacts, watermarks, and blurry renders."
+            "4. Enforce the identical visual_style_anchor on every scene to guarantee stylistic harmony. "
+            "5. Provide targeted 'negative_prompt' tokens to suppress text artifacts, watermarks, and blurry renders."
         )
         if analytics_feedback:
             system_prompt += f" Consider this feedback from previous videos to improve engagement: {analytics_feedback}"
@@ -213,11 +214,13 @@ def generate_script_from_text(
     ]
 
     scenes = []
+    subject_entity = project_id.replace("_", " ").title()
+
     for index, sentence in enumerate(sentences, start=1):
         clean_sentence = sentence.rstrip(".")
         framing = framing_sequence[(index - 1) % len(framing_sequence)]
         prompt_str = (
-            f"{framing} depicting: {clean_sentence}. "
+            f"{framing} depicting: {clean_sentence}. Consistent focal subject: {subject_entity}. "
             "Balanced exposure, high-contrast clarity, and uncluttered background composition"
         )
         scenes.append(

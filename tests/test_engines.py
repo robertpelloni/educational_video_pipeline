@@ -200,6 +200,40 @@ def test_generate_voiceover_sync(mock_open, mock_submaker, mock_communicate):
 @patch("src.audio_engine.edge_tts.Communicate")
 @patch("src.audio_engine.edge_tts.SubMaker")
 @patch("builtins.open", new_callable=MagicMock)
+def test_generate_voiceover_word_boundary_prioritization(
+    mock_open, mock_submaker, mock_communicate
+):
+    mock_comm_instance = MagicMock()
+
+    # Simulate both WordBoundary and SentenceBoundary chunks in the stream
+    async def mock_stream():
+        yield {"type": "audio", "data": b"fake_audio"}
+        yield {"type": "SentenceBoundary", "data": "sentence_chunk"}
+        yield {"type": "WordBoundary", "data": "word_chunk_1"}
+        yield {"type": "WordBoundary", "data": "word_chunk_2"}
+
+    mock_comm_instance.stream.return_value = mock_stream()
+    mock_communicate.return_value = mock_comm_instance
+
+    mock_sub_instance = MagicMock()
+    mock_sub_instance.get_srt.return_value = "1\n00:00:00,000 --> 00:00:02,000\nSub"
+    mock_submaker.return_value = mock_sub_instance
+
+    from src.audio_engine import generate_voiceover
+
+    with patch("src.audio_engine.os.makedirs"):
+        generate_voiceover("Word boundary priority test", "priority.mp3")
+
+    # When WordBoundary is present, sub_maker.feed should only receive the 2 WordBoundary chunks,
+    # NOT the sentence boundary (preventing duplicate overlapping cues)
+    assert mock_sub_instance.feed.call_count == 2
+    fed_types = [call.args[0]["type"] for call in mock_sub_instance.feed.mock_calls]
+    assert all(t == "WordBoundary" for t in fed_types)
+
+
+@patch("src.audio_engine.edge_tts.Communicate")
+@patch("src.audio_engine.edge_tts.SubMaker")
+@patch("builtins.open", new_callable=MagicMock)
 def test_generate_voiceover_fallback_subtitle(
     mock_open, mock_submaker, mock_communicate
 ):

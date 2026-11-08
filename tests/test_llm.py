@@ -161,3 +161,18 @@ def test_camera_framing_directives_in_mock():
     assert "Medium macro focus" in scenes[1]["visual_prompt"]
     assert "Detailed cutaway diagram cross-section" in scenes[2]["visual_prompt"]
     assert "Cinematic low-angle educational view" in scenes[3]["visual_prompt"]
+
+
+def test_visual_prompt_entity_continuity():
+    raw_text = (
+        "Saturn has prominent rings composed of ice and rock particles. "
+        "The Cassini division is the largest gap within Saturn's ring system. "
+        "Titan is the largest moon orbiting Saturn with a dense nitrogen atmosphere."
+    )
+    result = generate_script_from_text(raw_text, project_id="saturn_exploration")
+    scenes = result["scenes"]
+    assert len(scenes) == 3
+
+    # All scenes must explicitly maintain subject entity continuity
+    for scene in scenes:
+        assert "Consistent focal subject: Saturn Exploration" in scene["visual_prompt"]
