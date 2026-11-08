@@ -1,4 +1,5 @@
 import asyncio
+import math
 import os
 import logging
 import edge_tts
@@ -34,7 +35,12 @@ async def _generate_audio_async(text, output_path, voice="en-US-ChristopherNeura
         logger.warning(
             f"SubMaker generated empty subtitles for '{text[:30]}...'. Synthesizing fallback subtitle block."
         )
-        srt_content = f"1\n00:00:00,000 --> 00:00:05,000\n{text}\n"
+        # Approximate duration based on word count (150 words per minute ~ 2.5 words/sec)
+        words = len(text.split())
+        approx_secs = max(3, math.ceil(words / 2.5))
+        m, s = divmod(approx_secs, 60)
+        end_time_str = f"00:{m:02d}:{s:02d},000"
+        srt_content = f"1\n00:00:00,000 --> {end_time_str}\n{text}\n"
 
     with open(srt_output_path, "w", encoding="utf-8") as file:
         file.write(srt_content)

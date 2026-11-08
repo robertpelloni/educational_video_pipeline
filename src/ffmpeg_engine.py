@@ -91,7 +91,19 @@ def compile_video(
                 pass
 
         if has_subtitles:
-            v_stream = v_stream.filter("subtitles", srt_file)
+            # Enhanced subtitle styling for crisp, high-visibility readability
+            sub_style = (
+                "FontSize=22,"
+                "PrimaryColour=&H00FFFFFF,"
+                "OutlineColour=&H00000000,"
+                "BackColour=&H80000000,"
+                "BorderStyle=3,"
+                "Outline=2,"
+                "Shadow=1,"
+                "MarginV=35,"
+                "Alignment=2"
+            )
+            v_stream = v_stream.filter("subtitles", srt_file, force_style=sub_style)
 
         # Audio: Input voiceover
         a_stream = ffmpeg.input(audio_file)

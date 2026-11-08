@@ -64,11 +64,14 @@ def test_compile_video_logic(mock_exists, mock_get_audio_duration, mock_ffmpeg):
     # Verify subtitles filter was applied (because os.path.exists is mocked to True)
     # the filter is called on the node, not ffmpeg.filter
     filter_calls = [
-        call.args[0]
+        call
         for call in mock_node.filter.mock_calls
         if len(call.args) > 0 and call.args[0] == "subtitles"
     ]
-    assert "subtitles" in filter_calls
+    assert len(filter_calls) > 0
+    # Verify custom styling was passed into the subtitles filter
+    assert "force_style" in filter_calls[0].kwargs
+    assert "FontSize=" in filter_calls[0].kwargs["force_style"]
 
 
 @patch("src.ffmpeg_engine.ffmpeg")
@@ -222,3 +225,4 @@ def test_generate_voiceover_fallback_subtitle(
     handle = mock_open.return_value.__enter__.return_value
     write_calls = [call.args[0] for call in handle.write.mock_calls if call.args]
     assert any("Test fallback text" in str(arg) for arg in write_calls)
+    assert any("00:00:00,000 --> 00:00:" in str(arg) for arg in write_calls)
