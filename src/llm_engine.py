@@ -145,6 +145,40 @@ def get_llm_client():
     return instructor.from_openai(OpenAI(api_key=api_key))
 
 
+def compose_scene_visual_prompt(
+    scene: dict, global_style_anchor: Optional[str] = None
+) -> str:
+    """
+    Synthesizes a cohesive, composite visual prompt for image generation,
+    combining scene description, camera angle, lighting setup, and style anchors
+    without redundant repetition.
+    """
+    parts = []
+
+    visual_prompt = (
+        scene.get("visual_prompt")
+        or f"Educational illustration regarding: {scene.get('text', '')}"
+    )
+    parts.append(visual_prompt.rstrip("."))
+
+    camera_angle = scene.get("camera_angle")
+    if camera_angle and camera_angle not in visual_prompt:
+        parts.append(f"Framing: {camera_angle}")
+
+    lighting = scene.get("lighting_setup")
+    if lighting and lighting not in visual_prompt:
+        parts.append(f"Lighting: {lighting}")
+
+    style = scene.get("visual_style_anchor") or global_style_anchor
+    if style and style not in visual_prompt:
+        parts.append(f"Style: {style}")
+
+    res = ". ".join(parts)
+    if not res.endswith("."):
+        res += "."
+    return res
+
+
 def generate_script_from_text(
     raw_text: str,
     project_id: str = "auto_gen_001",

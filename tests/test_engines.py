@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from src.ffmpeg_engine import compile_video, MissingAssetError
+from src.audio_engine import format_subtitle_cues
 
 
 def test_missing_image_raises_error(tmp_path):
@@ -260,3 +261,19 @@ def test_generate_voiceover_fallback_subtitle(
     write_calls = [call.args[0] for call in handle.write.mock_calls if call.args]
     assert any("Test fallback text" in str(arg) for arg in write_calls)
     assert any("00:00:00,000 --> 00:00:" in str(arg) for arg in write_calls)
+
+
+def test_format_subtitle_cues_wrapping():
+    long_cue_text = (
+        "1\n00:00:00,000 --> 00:00:04,500\n"
+        "This is an exceptionally long educational caption line that causes overflow."
+    )
+    wrapped = format_subtitle_cues(long_cue_text, max_line_length=35)
+
+    lines = wrapped.strip().split("\n")
+    assert lines[0] == "1"
+    assert lines[1] == "00:00:00,000 --> 00:00:04,500"
+    # Verify text was broken into multiple wrapped lines
+    assert len(lines) > 3
+    for line in lines[2:]:
+        assert len(line) <= 35

@@ -3,6 +3,7 @@ import jsonschema
 from unittest.mock import patch, MagicMock
 from src.llm_engine import (
     generate_script_from_text,
+    compose_scene_visual_prompt,
     VideoScript,
     Scene,
     YouTubeMetadata,
@@ -194,3 +195,19 @@ def test_scene_lighting_and_camera_angle_continuity():
         assert "Illumination:" in scene["visual_prompt"]
         # Verify valid schema match
         jsonschema.validate(instance=result, schema=SCHEMA)
+
+
+def test_compose_scene_visual_prompt():
+    scene = {
+        "text": "The heart pumps oxygenated blood.",
+        "visual_prompt": "Detailed anatomical model of human heart",
+        "camera_angle": "macro zoom cutaway",
+        "lighting_setup": "cool volumetric medical lighting",
+        "visual_style_anchor": "crisp vector digital schematic",
+    }
+    composite = compose_scene_visual_prompt(scene)
+
+    assert "Detailed anatomical model of human heart" in composite
+    assert "Framing: macro zoom cutaway" in composite
+    assert "Lighting: cool volumetric medical lighting" in composite
+    assert "Style: crisp vector digital schematic" in composite

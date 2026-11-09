@@ -1,10 +1,37 @@
 import asyncio
 import math
 import os
+import textwrap
 import logging
 import edge_tts
 
 logger = logging.getLogger(__name__)
+
+
+def format_subtitle_cues(srt_content: str, max_line_length: int = 40) -> str:
+    """
+    Wraps subtitle cue text to prevent caption overflow on narrow portrait canvas (9:16 Shorts/Reels/TikTok).
+    Preserves cue sequence indices and timing intervals.
+    """
+    if not srt_content:
+        return ""
+
+    blocks = srt_content.strip().split("\n\n")
+    formatted_blocks = []
+
+    for block in blocks:
+        lines = block.strip().split("\n")
+        if len(lines) >= 3:
+            seq_num = lines[0]
+            timing = lines[1]
+            cue_text = " ".join(lines[2:])
+            # Wrap lines cleanly
+            wrapped_lines = textwrap.wrap(cue_text, width=max_line_length)
+            formatted_blocks.append(f"{seq_num}\n{timing}\n" + "\n".join(wrapped_lines))
+        else:
+            formatted_blocks.append(block)
+
+    return "\n\n".join(formatted_blocks) + "\n"
 
 
 async def _generate_audio_async(text, output_path, voice="en-US-ChristopherNeural"):
@@ -57,8 +84,11 @@ async def _generate_audio_async(text, output_path, voice="en-US-ChristopherNeura
         end_time_str = f"00:{m:02d}:{s:02d},000"
         srt_content = f"1\n00:00:00,000 --> {end_time_str}\n{text}\n"
 
+    # Format cues to wrap cleanly on portrait aspect ratios
+    formatted_srt = format_subtitle_cues(srt_content, max_line_length=40)
+
     with open(srt_output_path, "w", encoding="utf-8") as file:
-        file.write(srt_content)
+        file.write(formatted_srt)
 
 
 def generate_voiceover(text, output_path, voice="en-US-ChristopherNeural"):
