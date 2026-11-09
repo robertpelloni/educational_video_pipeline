@@ -377,6 +377,7 @@ def generate_script_from_text(
 
     scenes = []
     subject_entity = project_id.replace("_", " ").title()
+    prev_focal_elements = []
 
     for index, sentence in enumerate(sentences, start=1):
         clean_sentence = sentence.rstrip(".")
@@ -391,9 +392,17 @@ def generate_script_from_text(
             f" Concrete elements: {', '.join(entities)}." if entities else ""
         )
 
+        transition_context = ""
+        if prev_focal_elements:
+            transition_context = (
+                f" Visual continuity from: {', '.join(prev_focal_elements[:2])}."
+            )
+        if entities:
+            prev_focal_elements = entities
+
         prompt_str = (
             f"{framing} depicting: {clean_sentence}. Consistent focal subject: {subject_entity}."
-            f"{entity_grounding} Illumination: {lighting}. Palette: {palette}. Medium: {medium}. "
+            f"{entity_grounding}{transition_context} Illumination: {lighting}. Palette: {palette}. Medium: {medium}. "
             "Balanced exposure, high-contrast clarity, and uncluttered background"
         )
         scenes.append(

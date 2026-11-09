@@ -399,3 +399,13 @@ def test_format_subtitle_cues_chronological_sorting_and_overlap_deduplication():
 
     assert blocks[2].startswith("3\n00:00:04,500 --> 00:00:06,000")
     assert "Third cue overlapping with second" in blocks[2]
+
+
+def test_format_subtitle_cues_clean_whitespace_and_word_boundaries():
+    cue_with_messy_whitespace = (
+        "1\n00:00:00,000 --> 00:00:02,000\n"
+        "  Intracellular   metabolic   pathways  function   continuously.  "
+    )
+    formatted = format_subtitle_cues(cue_with_messy_whitespace, max_line_length=35)
+    assert "  " not in formatted
+    assert "Intracellular metabolic pathways" in formatted

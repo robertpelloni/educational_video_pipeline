@@ -77,7 +77,11 @@ def format_subtitle_cues(
         timing = (
             f"{format_srt_timestamp(start_sec)} --> {format_srt_timestamp(end_sec)}"
         )
-        wrapped_lines = textwrap.wrap(cue_text, width=max_line_length)
+        # Normalize whitespace and ensure clean word wrapping without breaking mid-word
+        clean_text = " ".join(cue_text.strip().split())
+        wrapped_lines = textwrap.wrap(
+            clean_text, width=max_line_length, break_long_words=False
+        )
         formatted_blocks.append(f"{idx}\n{timing}\n" + "\n".join(wrapped_lines))
 
     return "\n\n".join(formatted_blocks) + "\n"

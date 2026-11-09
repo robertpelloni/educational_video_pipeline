@@ -339,3 +339,16 @@ def test_generate_script_semantic_entity_grounding_fallback():
         "Gravitational" in scenes[1]["visual_prompt"]
         or "clusters" in scenes[1]["visual_prompt"]
     )
+
+
+def test_generate_script_inter_scene_visual_continuity():
+    raw_text = (
+        "Cellular mitochondria generate chemical energy molecules called adenosine triphosphate. "
+        "These energy packets fuel muscular contractions and biological processes across organs."
+    )
+    result = generate_script_from_text(raw_text, project_id="bio_continuity")
+    scenes = result["scenes"]
+    assert len(scenes) == 2
+
+    # First scene introduces initial elements, second scene maintains explicit visual continuity
+    assert "Visual continuity from:" in scenes[1]["visual_prompt"]
