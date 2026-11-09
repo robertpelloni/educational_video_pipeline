@@ -179,6 +179,91 @@ def test_compile_video_with_canvas_format_override(
     assert "FontSize=28" in sub_filter_calls[0].kwargs.get("force_style", "")
 
 
+@patch("src.ffmpeg_engine.ffmpeg")
+@patch("src.ffmpeg_engine.get_audio_duration", return_value=5.0)
+@patch("src.ffmpeg_engine.os.path.exists", return_value=True)
+def test_compile_video_focal_point_zoompan_coordinates(
+    mock_exists, mock_get_audio_duration, mock_ffmpeg
+):
+    config = {
+        "project_id": "test_focal",
+        "canvas_format": "landscape",
+        "scenes": [
+            {
+                "sequence": 1,
+                "text": "test focal",
+                "image_path": "fake_image_1.png",
+                "voiceover_path": "fake_audio_1.mp3",
+                "focal_point": "top",
+            }
+        ],
+    }
+
+    mock_node = MagicMock()
+    mock_node.filter.return_value = mock_node
+    mock_ffmpeg.input.return_value = mock_node
+    mock_ffmpeg.concat.return_value = mock_node
+    mock_ffmpeg.filter.return_value = mock_node
+
+    mock_out = MagicMock()
+    mock_ffmpeg.output.return_value = mock_out
+    mock_ffmpeg.overwrite_output.return_value = mock_out
+
+    compile_video(config, "test_out_focal.mp4")
+
+    # Verify zoompan coordinates for 'top' focal point: y='0'
+    zoompan_calls = [
+        call
+        for call in mock_node.filter.mock_calls
+        if call.args and call.args[0] == "zoompan"
+    ]
+    assert len(zoompan_calls) > 0
+    assert zoompan_calls[0].kwargs.get("y") == "0"
+    assert zoompan_calls[0].kwargs.get("x") == "(iw-iw/zoom)/2"
+
+
+@patch("src.ffmpeg_engine.ffmpeg")
+@patch("src.ffmpeg_engine.get_audio_duration", return_value=5.0)
+@patch("src.ffmpeg_engine.os.path.exists", return_value=True)
+def test_compile_video_subtitle_font_family_and_shadow(
+    mock_exists, mock_get_audio_duration, mock_ffmpeg
+):
+    config = {
+        "project_id": "test_sub_style",
+        "canvas_format": "landscape",
+        "scenes": [
+            {
+                "sequence": 1,
+                "text": "test style",
+                "image_path": "fake_image_1.png",
+                "voiceover_path": "fake_audio_1.mp3",
+            }
+        ],
+    }
+
+    mock_node = MagicMock()
+    mock_node.filter.return_value = mock_node
+    mock_ffmpeg.input.return_value = mock_node
+    mock_ffmpeg.concat.return_value = mock_node
+    mock_ffmpeg.filter.return_value = mock_node
+
+    mock_out = MagicMock()
+    mock_ffmpeg.output.return_value = mock_out
+    mock_ffmpeg.overwrite_output.return_value = mock_out
+
+    compile_video(config, "test_out_style.mp4")
+
+    sub_filter_calls = [
+        call
+        for call in mock_node.filter.mock_calls
+        if call.args and call.args[0] == "subtitles"
+    ]
+    assert len(sub_filter_calls) > 0
+    style = sub_filter_calls[0].kwargs.get("force_style", "")
+    assert "FontName=Arial" in style
+    assert "Shadow=2" in style
+
+
 @patch("src.audio_engine.edge_tts.Communicate")
 @patch("src.audio_engine.edge_tts.SubMaker")
 @patch("builtins.open", new_callable=MagicMock)
