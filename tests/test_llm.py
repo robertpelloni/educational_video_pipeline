@@ -4,6 +4,7 @@ from unittest.mock import patch, MagicMock
 from src.llm_engine import (
     generate_script_from_text,
     compose_scene_visual_prompt,
+    extract_key_visual_entities,
     VideoScript,
     Scene,
     YouTubeMetadata,
@@ -297,3 +298,44 @@ def test_compose_scene_visual_prompt_sanitization_and_bounds():
     }
     truncated_composite = compose_scene_visual_prompt(scene_long, max_words=50)
     assert len(truncated_composite.split()) <= 50
+
+
+def test_extract_key_visual_entities():
+    narration = "The James Webb Space Telescope captures infrared observations of distant galaxy clusters."
+    entities = extract_key_visual_entities(narration, max_entities=8)
+    assert "James" in entities or "Webb" in entities
+    assert "Space" in entities or "Telescope" in entities
+    assert "galaxy" in entities or "clusters" in entities
+
+
+def test_compose_scene_visual_prompt_with_focal_subject():
+    scene = {
+        "text": "The ribosome translates messenger RNA into peptide chains.",
+        "visual_prompt": "Molecular cutaway of cellular cytoplasm",
+        "focal_subject": "Active 80S Ribosome Complex",
+    }
+    composite = compose_scene_visual_prompt(scene)
+    assert "Primary focal subject: Active 80S Ribosome Complex" in composite
+    assert "Molecular cutaway of cellular cytoplasm" in composite
+
+
+def test_generate_script_semantic_entity_grounding_fallback():
+    raw_text = (
+        "Supermassive black holes generate relativistic particle jets. "
+        "Gravitational lensing bends the spacetime fabric around galactic clusters."
+    )
+    result = generate_script_from_text(raw_text, project_id="astrophysics_01")
+    scenes = result["scenes"]
+    assert len(scenes) == 2
+
+    # Verify that concrete elements were extracted into the visual prompts
+    assert "Concrete elements:" in scenes[0]["visual_prompt"]
+    assert (
+        "Supermassive" in scenes[0]["visual_prompt"]
+        or "holes" in scenes[0]["visual_prompt"]
+    )
+    assert "Concrete elements:" in scenes[1]["visual_prompt"]
+    assert (
+        "Gravitational" in scenes[1]["visual_prompt"]
+        or "clusters" in scenes[1]["visual_prompt"]
+    )

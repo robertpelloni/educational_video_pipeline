@@ -165,6 +165,64 @@ def get_llm_client():
     return instructor.from_openai(OpenAI(api_key=api_key))
 
 
+def extract_key_visual_entities(text: str, max_entities: int = 5) -> List[str]:
+    """
+    Heuristically extracts key tangible nouns and scientific entities from narration text
+    to anchor visual prompt consistency and avoid generic abstractions.
+    """
+    stop_words = {
+        "this",
+        "that",
+        "these",
+        "those",
+        "there",
+        "their",
+        "which",
+        "where",
+        "when",
+        "what",
+        "then",
+        "with",
+        "from",
+        "into",
+        "during",
+        "including",
+        "until",
+        "against",
+        "among",
+        "throughout",
+        "despite",
+        "towards",
+        "upon",
+        "concerning",
+        "about",
+        "also",
+        "very",
+        "often",
+        "many",
+        "some",
+        "such",
+        "other",
+        "captures",
+        "observations",
+        "generate",
+        "bends",
+    }
+    import re
+
+    # Find prominent words (> 3 chars)
+    words = re.findall(r"\b[A-Za-z0-9_-]{4,}\b", text)
+    entities = [w for w in words if w.lower() not in stop_words]
+    # Deduplicate while preserving order
+    seen = set()
+    deduped = []
+    for e in entities:
+        if e.lower() not in seen:
+            seen.add(e.lower())
+            deduped.append(e)
+    return deduped[:max_entities]
+
+
 def compose_scene_visual_prompt(
     scene: dict,
     global_style_anchor: Optional[str] = None,
@@ -188,6 +246,11 @@ def compose_scene_visual_prompt(
         or f"Educational illustration regarding: {scene.get('text', '')}"
     )
     parts.append(clean_token(visual_prompt))
+
+    # Weave tangible focal subject entity if specified
+    focal_subject = scene.get("focal_subject")
+    if focal_subject and focal_subject not in visual_prompt:
+        parts.append(f"Primary focal subject: {clean_token(focal_subject)}")
 
     camera_angle = scene.get("camera_angle")
     if camera_angle and camera_angle not in visual_prompt:
@@ -258,13 +321,16 @@ def generate_script_from_text(
         system_prompt = (
             "You are an expert educational video scriptwriter and visual art director. "
             "Your task is to parse educational content into a visually coherent sequence of scenes. "
-            "To maximize visual continuity: "
+            "To maximize visual continuity and relevance: "
             f"1. Enforce this cohesive visual_style_anchor across all scenes: '{chosen_style_anchor}'. "
             "2. Maintain strict subject identity and visual continuity across scenes referencing the topic entity. "
-            "3. For each scene, craft a 'visual_prompt' specifying camera framing (wide establishing shot, "
+            "3. Ground each scene's 'visual_prompt' in concrete, tangible physical objects, mechanisms, "
+            "and physical environments described in the narration. "
+            "Explicitly avoid generic or vague abstract metaphors. "
+            "4. For each scene, craft a 'visual_prompt' specifying camera framing (wide establishing shot, "
             "macro focal view, or cross-section cutaway), dynamic studio lighting, and clear subject isolation. "
-            "4. Enforce the identical visual_style_anchor on every scene to guarantee stylistic harmony. "
-            "5. Provide targeted 'negative_prompt' tokens to suppress text artifacts, watermarks, and blurry renders."
+            "5. Enforce the identical visual_style_anchor on every scene to guarantee stylistic harmony. "
+            "6. Provide targeted 'negative_prompt' tokens to suppress text artifacts, watermarks, and blurry renders."
         )
         if analytics_feedback:
             system_prompt += f" Consider this feedback from previous videos to improve engagement: {analytics_feedback}"
@@ -318,9 +384,16 @@ def generate_script_from_text(
         lighting = "volumetric studio rim lighting with soft ambient fill"
         palette = "balanced scientific educational hues with high-contrast accents"
         medium = "digital vector illustration"
+
+        # Ground scene prompt in concrete semantic entities extracted from narration
+        entities = extract_key_visual_entities(clean_sentence)
+        entity_grounding = (
+            f" Concrete elements: {', '.join(entities)}." if entities else ""
+        )
+
         prompt_str = (
-            f"{framing} depicting: {clean_sentence}. Consistent focal subject: {subject_entity}. "
-            f"Illumination: {lighting}. Palette: {palette}. Medium: {medium}. "
+            f"{framing} depicting: {clean_sentence}. Consistent focal subject: {subject_entity}."
+            f"{entity_grounding} Illumination: {lighting}. Palette: {palette}. Medium: {medium}. "
             "Balanced exposure, high-contrast clarity, and uncluttered background"
         )
         scenes.append(
