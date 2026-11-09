@@ -352,3 +352,24 @@ def test_generate_script_inter_scene_visual_continuity():
 
     # First scene introduces initial elements, second scene maintains explicit visual continuity
     assert "Visual continuity from:" in scenes[1]["visual_prompt"]
+
+
+def test_scene_pacing_tempo_and_schema_conformance():
+    raw_text = (
+        "Volcanoes erupt due to magma rising from the mantle. "
+        "Lava flows cool and solidify into igneous rock formations. "
+        "Over millions of years, volcanic ash fertilizes surrounding agricultural soil."
+    )
+    result = generate_script_from_text(raw_text, project_id="volcanology")
+    scenes = result["scenes"]
+    assert len(scenes) == 3
+
+    assert scenes[0]["pacing_tempo"] == "hook_intro"
+    assert scenes[1]["pacing_tempo"] == "exposition"
+    assert scenes[2]["pacing_tempo"] == "deep_dive"
+
+    for scene in scenes:
+        assert "Narrative pacing:" in scene["visual_prompt"]
+
+    # Validate schema conforms
+    jsonschema.validate(instance=result, schema=SCHEMA)

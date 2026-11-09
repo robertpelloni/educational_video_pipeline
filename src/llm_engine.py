@@ -99,6 +99,13 @@ class Scene(BaseModel):
         default="center",
         description="Primary focal anchor point within the canvas (e.g. 'center', 'top', 'bottom', 'left', 'right').",
     )
+    pacing_tempo: Optional[str] = Field(
+        default="exposition",
+        description=(
+            "Narrative pacing role: 'hook_intro', 'exposition', 'deep_dive', "
+            "'dramatic_revelation', or 'summary_call_to_action'."
+        ),
+    )
     image_path: str = Field(
         description="Path to save the generated image. Use 'assets/images/{project_id}_scene_{sequence}.png'"
     )
@@ -375,6 +382,14 @@ def generate_script_from_text(
         "Cinematic low-angle educational view, subtle depth of field and soft rim light",
     ]
 
+    pacing_sequence = [
+        "hook_intro",
+        "exposition",
+        "deep_dive",
+        "dramatic_revelation",
+        "summary_call_to_action",
+    ]
+
     scenes = []
     subject_entity = project_id.replace("_", " ").title()
     prev_focal_elements = []
@@ -382,6 +397,7 @@ def generate_script_from_text(
     for index, sentence in enumerate(sentences, start=1):
         clean_sentence = sentence.rstrip(".")
         framing = framing_sequence[(index - 1) % len(framing_sequence)]
+        pacing = pacing_sequence[min(index - 1, len(pacing_sequence) - 1)]
         lighting = "volumetric studio rim lighting with soft ambient fill"
         palette = "balanced scientific educational hues with high-contrast accents"
         medium = "digital vector illustration"
@@ -403,7 +419,7 @@ def generate_script_from_text(
         prompt_str = (
             f"{framing} depicting: {clean_sentence}. Consistent focal subject: {subject_entity}."
             f"{entity_grounding}{transition_context} Illumination: {lighting}. Palette: {palette}. Medium: {medium}. "
-            "Balanced exposure, high-contrast clarity, and uncluttered background"
+            f"Narrative pacing: {pacing}. Balanced exposure, high-contrast clarity, and uncluttered background"
         )
         scenes.append(
             {
@@ -416,6 +432,7 @@ def generate_script_from_text(
                 "camera_angle": framing,
                 "color_palette": palette,
                 "artistic_medium": medium,
+                "pacing_tempo": pacing,
                 "image_path": f"assets/images/{project_id}_scene_{index}.png",
                 "voiceover_path": f"assets/audio/{project_id}_scene_{index}.mp3",
             }
