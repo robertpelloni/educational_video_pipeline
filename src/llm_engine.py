@@ -79,6 +79,14 @@ class Scene(BaseModel):
         default=DEFAULT_NEGATIVE_PROMPT,
         description="Negative prompt tokens to suppress text, watermarks, deformities, and artifacts.",
     )
+    lighting_setup: Optional[str] = Field(
+        default="volumetric studio rim lighting with soft ambient fill",
+        description="Explicit lighting setup to guarantee illumination continuity across scene transitions.",
+    )
+    camera_angle: Optional[str] = Field(
+        default="eye-level centered macro framing",
+        description="Camera perspective or shot angle (e.g. eye-level, low-angle, top-down schematic, cutaway).",
+    )
     image_path: str = Field(
         description="Path to save the generated image. Use 'assets/images/{project_id}_scene_{sequence}.png'"
     )
@@ -219,9 +227,10 @@ def generate_script_from_text(
     for index, sentence in enumerate(sentences, start=1):
         clean_sentence = sentence.rstrip(".")
         framing = framing_sequence[(index - 1) % len(framing_sequence)]
+        lighting = "volumetric studio rim lighting with soft ambient fill"
         prompt_str = (
             f"{framing} depicting: {clean_sentence}. Consistent focal subject: {subject_entity}. "
-            "Balanced exposure, high-contrast clarity, and uncluttered background composition"
+            f"Illumination: {lighting}. Balanced exposure, high-contrast clarity, and uncluttered background"
         )
         scenes.append(
             {
@@ -230,6 +239,8 @@ def generate_script_from_text(
                 "visual_prompt": prompt_str,
                 "visual_style_anchor": chosen_style_anchor,
                 "negative_prompt": DEFAULT_NEGATIVE_PROMPT,
+                "lighting_setup": lighting,
+                "camera_angle": framing,
                 "image_path": f"assets/images/{project_id}_scene_{index}.png",
                 "voiceover_path": f"assets/audio/{project_id}_scene_{index}.mp3",
             }

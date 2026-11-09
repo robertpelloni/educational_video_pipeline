@@ -103,7 +103,7 @@ def test_generate_script_visual_prompt_alignment():
     assert "visual_prompt" in scene
     assert "mitochondria" in scene["visual_prompt"]
     assert "Wide establishing shot" in scene["visual_prompt"]
-    assert "uncluttered background composition" in scene["visual_prompt"]
+    assert "uncluttered background" in scene["visual_prompt"]
 
 
 def test_scene_visual_style_anchor_and_coherence():
@@ -176,3 +176,21 @@ def test_visual_prompt_entity_continuity():
     # All scenes must explicitly maintain subject entity continuity
     for scene in scenes:
         assert "Consistent focal subject: Saturn Exploration" in scene["visual_prompt"]
+
+
+def test_scene_lighting_and_camera_angle_continuity():
+    raw_text = (
+        "Cellular respiration generates adenosine triphosphate. "
+        "The electron transport chain creates a proton gradient across the inner mitochondrial membrane."
+    )
+    result = generate_script_from_text(raw_text, project_id="bio_respiration")
+    scenes = result["scenes"]
+    assert len(scenes) == 2
+
+    for scene in scenes:
+        assert "lighting_setup" in scene
+        assert "camera_angle" in scene
+        assert "volumetric studio rim lighting" in scene["lighting_setup"]
+        assert "Illumination:" in scene["visual_prompt"]
+        # Verify valid schema match
+        jsonschema.validate(instance=result, schema=SCHEMA)

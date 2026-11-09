@@ -29,6 +29,8 @@ SCHEMA = {
                     "visual_prompt": {"type": ["string", "null"]},
                     "visual_style_anchor": {"type": ["string", "null"]},
                     "negative_prompt": {"type": ["string", "null"]},
+                    "lighting_setup": {"type": ["string", "null"]},
+                    "camera_angle": {"type": ["string", "null"]},
                     "image_path": {"type": "string"},
                     "voiceover_path": {"type": "string"},
                     "choices": {
