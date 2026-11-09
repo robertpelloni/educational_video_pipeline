@@ -87,6 +87,14 @@ class Scene(BaseModel):
         default="eye-level centered macro framing",
         description="Camera perspective or shot angle (e.g. eye-level, low-angle, top-down schematic, cutaway).",
     )
+    color_palette: Optional[str] = Field(
+        default="balanced scientific educational hues with high-contrast accents",
+        description="Cohesive color grading palette (e.g. vibrant indigo, golden amber, deep neutral slate).",
+    )
+    artistic_medium: Optional[str] = Field(
+        default="digital vector illustration",
+        description="Visual execution medium (e.g. 3D volumetric render, digital vector, photography).",
+    )
     image_path: str = Field(
         description="Path to save the generated image. Use 'assets/images/{project_id}_scene_{sequence}.png'"
     )
@@ -129,6 +137,14 @@ class VideoScript(BaseModel):
         default=DEFAULT_NEGATIVE_PROMPT,
         description="Global negative prompt tokens for image synthesis.",
     )
+    color_palette: Optional[str] = Field(
+        default="balanced scientific educational hues with high-contrast accents",
+        description="Global color grading palette applied across the video.",
+    )
+    artistic_medium: Optional[str] = Field(
+        default="digital vector illustration",
+        description="Global artistic medium applied across the video.",
+    )
     platforms: List[Literal["youtube", "tiktok", "instagram", "twitter"]] = Field(
         default=["youtube", "tiktok", "instagram", "twitter"]
     )
@@ -170,6 +186,14 @@ def compose_scene_visual_prompt(
     lighting = scene.get("lighting_setup")
     if lighting and lighting not in visual_prompt:
         parts.append(f"Lighting: {lighting}")
+
+    palette = scene.get("color_palette")
+    if palette and palette not in visual_prompt:
+        parts.append(f"Palette: {palette}")
+
+    medium = scene.get("artistic_medium")
+    if medium and medium not in visual_prompt:
+        parts.append(f"Medium: {medium}")
 
     style = scene.get("visual_style_anchor") or global_style_anchor
     if style and style not in visual_prompt:
@@ -270,9 +294,12 @@ def generate_script_from_text(
         clean_sentence = sentence.rstrip(".")
         framing = framing_sequence[(index - 1) % len(framing_sequence)]
         lighting = "volumetric studio rim lighting with soft ambient fill"
+        palette = "balanced scientific educational hues with high-contrast accents"
+        medium = "digital vector illustration"
         prompt_str = (
             f"{framing} depicting: {clean_sentence}. Consistent focal subject: {subject_entity}. "
-            f"Illumination: {lighting}. Balanced exposure, high-contrast clarity, and uncluttered background"
+            f"Illumination: {lighting}. Palette: {palette}. Medium: {medium}. "
+            "Balanced exposure, high-contrast clarity, and uncluttered background"
         )
         scenes.append(
             {
@@ -283,6 +310,8 @@ def generate_script_from_text(
                 "negative_prompt": DEFAULT_NEGATIVE_PROMPT,
                 "lighting_setup": lighting,
                 "camera_angle": framing,
+                "color_palette": palette,
+                "artistic_medium": medium,
                 "image_path": f"assets/images/{project_id}_scene_{index}.png",
                 "voiceover_path": f"assets/audio/{project_id}_scene_{index}.mp3",
             }
@@ -295,6 +324,8 @@ def generate_script_from_text(
         "global_music_volume_db": -18.0,
         "visual_style_anchor": chosen_style_anchor,
         "negative_prompt": DEFAULT_NEGATIVE_PROMPT,
+        "color_palette": "balanced scientific educational hues with high-contrast accents",
+        "artistic_medium": "digital vector illustration",
         "platforms": ["youtube", "tiktok", "instagram", "twitter"],
         "scenes": scenes,
         "youtube_metadata": {

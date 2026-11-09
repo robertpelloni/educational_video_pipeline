@@ -222,3 +222,32 @@ def test_compose_scene_visual_prompt_with_negative_tokens():
     composite = compose_scene_visual_prompt(scene, include_negatives=True)
     assert "Solar prominence rising from the chromosphere" in composite
     assert "Avoid: low resolution, text watermark, distortion." in composite
+
+
+def test_compose_scene_visual_prompt_color_palette():
+    scene = {
+        "text": "Photosynthesis creates glucose.",
+        "visual_prompt": "Chloroplast diagram",
+        "color_palette": "emerald greens and vibrant cyan accents",
+        "artistic_medium": "3D volumetric render",
+    }
+    composite = compose_scene_visual_prompt(scene)
+    assert "Chloroplast diagram" in composite
+    assert "Palette: emerald greens and vibrant cyan accents" in composite
+    assert "Medium: 3D volumetric render" in composite
+
+
+def test_scene_color_palette_schema_validation():
+    raw_text = (
+        "The speed of light in vacuum is approximately 299,792,458 meters per second."
+    )
+    result = generate_script_from_text(raw_text, project_id="physics_constants")
+
+    assert "color_palette" in result
+    assert "artistic_medium" in result
+    for scene in result["scenes"]:
+        assert "color_palette" in scene
+        assert "artistic_medium" in scene
+
+    # Validate against formal schema
+    jsonschema.validate(instance=result, schema=SCHEMA)

@@ -19,6 +19,8 @@ SCHEMA = {
         "global_music_volume_db": {"type": "number"},
         "visual_style_anchor": {"type": ["string", "null"]},
         "negative_prompt": {"type": ["string", "null"]},
+        "color_palette": {"type": ["string", "null"]},
+        "artistic_medium": {"type": ["string", "null"]},
         "scenes": {
             "type": "array",
             "items": {
@@ -31,6 +33,8 @@ SCHEMA = {
                     "negative_prompt": {"type": ["string", "null"]},
                     "lighting_setup": {"type": ["string", "null"]},
                     "camera_angle": {"type": ["string", "null"]},
+                    "color_palette": {"type": ["string", "null"]},
+                    "artistic_medium": {"type": ["string", "null"]},
                     "image_path": {"type": "string"},
                     "voiceover_path": {"type": "string"},
                     "choices": {
