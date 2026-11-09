@@ -235,6 +235,7 @@ def compose_scene_visual_prompt(
     global_style_anchor: Optional[str] = None,
     include_negatives: bool = False,
     max_words: int = 300,
+    canvas_format: Optional[str] = None,
 ) -> str:
     """
     Synthesizes a cohesive, composite visual prompt for image generation,
@@ -262,6 +263,13 @@ def compose_scene_visual_prompt(
     camera_angle = scene.get("camera_angle")
     if camera_angle and camera_angle not in visual_prompt:
         parts.append(f"Framing: {clean_token(camera_angle)}")
+
+    # Add canvas format spatial framing directive if provided
+    fmt = canvas_format or scene.get("canvas_format")
+    if fmt == "portrait":
+        parts.append("Spatial layout: 9:16 vertical composition, centered subject")
+    elif fmt == "landscape":
+        parts.append("Spatial layout: 16:9 widescreen composition, expansive view")
 
     lighting = scene.get("lighting_setup")
     if lighting and lighting not in visual_prompt:

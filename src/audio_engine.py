@@ -3,6 +3,7 @@ import math
 import os
 import textwrap
 import logging
+from typing import Optional
 import edge_tts
 
 logger = logging.getLogger(__name__)
@@ -28,11 +29,15 @@ def format_srt_timestamp(seconds: float) -> str:
 
 
 def format_subtitle_cues(
-    srt_content: str, max_line_length: int = 40, min_duration: float = 1.2
+    srt_content: str,
+    max_line_length: int = 40,
+    min_duration: float = 1.2,
+    audio_duration_ceiling: Optional[float] = None,
 ) -> str:
     """
     Wraps subtitle cue text, enforces a minimum display duration threshold,
-    and resolves chronological cue overlaps to guarantee smooth, collision-free playback.
+    resolves chronological cue overlaps, and optionally clamps trailing cues to the voiceover
+    audio duration ceiling to guarantee smooth, collision-free playback.
     """
     if not srt_content:
         return ""
@@ -74,6 +79,14 @@ def format_subtitle_cues(
 
     formatted_blocks = []
     for idx, (start_sec, end_sec, cue_text) in enumerate(adjusted_cues, start=1):
+        # Optionally clamp cue to audio duration ceiling
+        if audio_duration_ceiling is not None and audio_duration_ceiling > 0:
+            if start_sec >= audio_duration_ceiling:
+                # Do not emit cues that start after the audio has completely terminated
+                continue
+            if end_sec > audio_duration_ceiling:
+                end_sec = audio_duration_ceiling
+
         timing = (
             f"{format_srt_timestamp(start_sec)} --> {format_srt_timestamp(end_sec)}"
         )

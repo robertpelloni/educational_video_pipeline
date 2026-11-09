@@ -373,3 +373,15 @@ def test_scene_pacing_tempo_and_schema_conformance():
 
     # Validate schema conforms
     jsonschema.validate(instance=result, schema=SCHEMA)
+
+
+def test_compose_scene_visual_prompt_canvas_format_spatial_layout():
+    scene = {
+        "text": "Deep sea hydrothermal vents.",
+        "visual_prompt": "Bioluminescent vent chimney",
+    }
+    portrait_prompt = compose_scene_visual_prompt(scene, canvas_format="portrait")
+    assert "Spatial layout: 9:16 vertical composition" in portrait_prompt
+
+    landscape_prompt = compose_scene_visual_prompt(scene, canvas_format="landscape")
+    assert "Spatial layout: 16:9 widescreen composition" in landscape_prompt

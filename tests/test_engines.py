@@ -409,3 +409,21 @@ def test_format_subtitle_cues_clean_whitespace_and_word_boundaries():
     formatted = format_subtitle_cues(cue_with_messy_whitespace, max_line_length=35)
     assert "  " not in formatted
     assert "Intracellular metabolic pathways" in formatted
+
+
+def test_format_subtitle_cues_audio_duration_ceiling():
+    cues = (
+        "1\n00:00:00,000 --> 00:00:02,000\nFirst cue in bounds.\n\n"
+        "2\n00:00:02,500 --> 00:00:05,000\nSecond cue extending past audio ceiling.\n\n"
+        "3\n00:00:04,500 --> 00:00:06,000\nThird cue completely past ceiling."
+    )
+    # Audio duration ceiling is 3.5 seconds
+    formatted = format_subtitle_cues(cues, audio_duration_ceiling=3.5)
+    blocks = [b.strip() for b in formatted.strip().split("\n\n") if b.strip()]
+
+    assert len(blocks) == 2
+    assert "00:00:00,000 --> 00:00:02,000" in blocks[0]
+    # Second cue must be clamped to 00:00:03,500
+    assert "00:00:02,500 --> 00:00:03,500" in blocks[1]
+    # Third cue starts after or is clamped out
+    assert not any("Third cue" in b for b in blocks)
