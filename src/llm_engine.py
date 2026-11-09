@@ -95,6 +95,10 @@ class Scene(BaseModel):
         default="digital vector illustration",
         description="Visual execution medium (e.g. 3D volumetric render, digital vector, photography).",
     )
+    focal_point: Optional[str] = Field(
+        default="center",
+        description="Primary focal anchor point within the canvas (e.g. 'center', 'top', 'bottom', 'left', 'right').",
+    )
     image_path: str = Field(
         description="Path to save the generated image. Use 'assets/images/{project_id}_scene_{sequence}.png'"
     )

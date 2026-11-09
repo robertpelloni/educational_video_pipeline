@@ -35,6 +35,7 @@ SCHEMA = {
                     "camera_angle": {"type": ["string", "null"]},
                     "color_palette": {"type": ["string", "null"]},
                     "artistic_medium": {"type": ["string", "null"]},
+                    "focal_point": {"type": ["string", "null"]},
                     "image_path": {"type": "string"},
                     "voiceover_path": {"type": "string"},
                     "choices": {

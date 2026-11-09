@@ -286,3 +286,9 @@ def test_format_subtitle_cues_wrapping():
     assert len(lines) > 3
     for line in lines[2:]:
         assert len(line) <= 35
+
+
+def test_audio_engine_minimum_cue_duration():
+    short_cue = "1\n00:00:01,000 --> 00:00:01,300\nQuick word"
+    formatted = format_subtitle_cues(short_cue, min_duration=1.2)
+    assert "00:00:01,000 --> 00:00:02,200" in formatted

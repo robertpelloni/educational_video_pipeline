@@ -59,6 +59,23 @@ def compile_video(
         # Get exact duration of speech
         duration = get_audio_duration(audio_file)
 
+        # Inspect subtitle end timestamp to ensure video duration encompasses all subtitle cues
+        srt_file = os.path.splitext(audio_file)[0] + ".srt"
+        if os.path.exists(srt_file) and os.path.isfile(srt_file):
+            try:
+                with open(srt_file, "r", encoding="utf-8") as f:
+                    content = f.read()
+                from src.audio_engine import parse_srt_timestamp
+
+                for line in content.splitlines():
+                    if " --> " in line:
+                        _, end_str = line.split(" --> ")
+                        cue_end = parse_srt_timestamp(end_str.strip())
+                        if cue_end > duration:
+                            duration = cue_end
+            except Exception as e:
+                logger.debug(f"Could not read subtitle end-time for scene {seq}: {e}")
+
         # Video: Input image, loop for duration, scale/crop, apply basic "zoom" pan effect
         # zoompan generates frames internally, so we don't loop the input image
         v_stream = (

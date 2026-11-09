@@ -8,10 +8,31 @@ import edge_tts
 logger = logging.getLogger(__name__)
 
 
-def format_subtitle_cues(srt_content: str, max_line_length: int = 40) -> str:
+def parse_srt_timestamp(ts: str) -> float:
+    """Parses an SRT timestamp (HH:MM:SS,mmm) into seconds."""
+    try:
+        time_part, millis_part = ts.split(",")
+        hours, minutes, seconds = map(int, time_part.split(":"))
+        return hours * 3600 + minutes * 60 + seconds + int(millis_part) / 1000.0
+    except Exception:
+        return 0.0
+
+
+def format_srt_timestamp(seconds: float) -> str:
+    """Formats seconds into an SRT timestamp string (HH:MM:SS,mmm)."""
+    hrs = int(seconds // 3600)
+    mins = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    millis = int(round((seconds - int(seconds)) * 1000))
+    return f"{hrs:02d}:{mins:02d}:{secs:02d},{millis:03d}"
+
+
+def format_subtitle_cues(
+    srt_content: str, max_line_length: int = 40, min_duration: float = 1.2
+) -> str:
     """
-    Wraps subtitle cue text to prevent caption overflow on narrow portrait canvas (9:16 Shorts/Reels/TikTok).
-    Preserves cue sequence indices and timing intervals.
+    Wraps subtitle cue text and enforces a minimum display duration threshold
+    to prevent rapid flashing and visual truncation on screen.
     """
     if not srt_content:
         return ""
@@ -25,7 +46,15 @@ def format_subtitle_cues(srt_content: str, max_line_length: int = 40) -> str:
             seq_num = lines[0]
             timing = lines[1]
             cue_text = " ".join(lines[2:])
-            # Wrap lines cleanly
+
+            if " --> " in timing:
+                start_str, end_str = timing.split(" --> ")
+                start_sec = parse_srt_timestamp(start_str.strip())
+                end_sec = parse_srt_timestamp(end_str.strip())
+                if end_sec - start_sec < min_duration:
+                    end_sec = start_sec + min_duration
+                    timing = f"{format_srt_timestamp(start_sec)} --> {format_srt_timestamp(end_sec)}"
+
             wrapped_lines = textwrap.wrap(cue_text, width=max_line_length)
             formatted_blocks.append(f"{seq_num}\n{timing}\n" + "\n".join(wrapped_lines))
         else:

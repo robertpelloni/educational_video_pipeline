@@ -251,3 +251,15 @@ def test_scene_color_palette_schema_validation():
 
     # Validate against formal schema
     jsonschema.validate(instance=result, schema=SCHEMA)
+
+
+def test_scene_focal_point_schema():
+    scene = Scene(
+        sequence=1,
+        text="A telescope focuses on Jupiter.",
+        image_path="assets/images/1.png",
+        voiceover_path="assets/audio/1.mp3",
+        focal_point="center",
+    )
+    dumped = scene.model_dump()
+    assert dumped["focal_point"] == "center"
