@@ -72,7 +72,9 @@ def main():
 
             # 1c. LLM Structure
             config = generate_script_from_text(
-                raw_text, project_id=project_id, analytics_feedback=feedback_summary
+                raw_text,
+                project_id=project_id,
+                analytics_feedback=feedback_summary,
             )
             jsonschema.validate(instance=config, schema=SCHEMA)
 

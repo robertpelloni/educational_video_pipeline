@@ -59,3 +59,76 @@ def fetch_wikipedia_summary(query: str, lang: str = "en") -> str:
             raise ValueError(f"Wikipedia article not found for query: '{query}'")
         else:
             raise ValueError(f"Wikipedia API returned HTTP {e.code}: {e.reason}")
+
+
+def fetch_wikipedia_sections(title: str, lang: str = "en") -> list:
+    """
+    Fetches the structural outline and section headers for a given Wikipedia article
+    using the Wikipedia Action API.
+
+    Args:
+        title (str): Title of the Wikipedia page.
+        lang (str): Language code.
+
+    Returns:
+        list: List of dictionaries with section 'line' (title) and 'number'.
+    """
+    if not title:
+        raise ValueError("Title cannot be empty.")
+
+    params = urllib.parse.urlencode(
+        {"action": "parse", "page": title, "prop": "sections", "format": "json"}
+    )
+    url = f"https://{lang}.wikipedia.org/w/api.php?{params}"
+
+    logger.info(f"Fetching Wikipedia sections for '{title}' from {url}")
+
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "AutomatedVideoPipeline/0.4.0 (https://github.com/robertpelloni)"
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(req) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            if "parse" in data and "sections" in data["parse"]:
+                return data["parse"]["sections"]
+            return []
+    except Exception as e:
+        logger.warning(f"Could not fetch Wikipedia sections for '{title}': {e}")
+        return []
+
+
+def ingest_topic_content(query: str, lang: str = "en") -> dict:
+    """
+    Orchestrates multi-source content ingestion: retrieves the lead summary
+    and structural section outlines to provide comprehensive context for video scripting.
+
+    Args:
+        query (str): The subject query.
+        lang (str): Language code.
+
+    Returns:
+        dict: A structured knowledge object containing 'title', 'summary', and 'sections'.
+    """
+    summary = fetch_wikipedia_summary(query, lang=lang)
+    sections = fetch_wikipedia_sections(query, lang=lang)
+
+    section_titles = [
+        sec.get("line")
+        for sec in sections
+        if sec.get("line") not in ("See also", "References", "External links")
+    ]
+
+    return {
+        "title": query,
+        "summary": summary,
+        "sections": section_titles,
+        "combined_text": (
+            f"{summary} Key topics explored include: {', '.join(section_titles[:4])}."
+            if section_titles
+            else summary
+        ),
+    }
