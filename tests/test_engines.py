@@ -427,3 +427,12 @@ def test_format_subtitle_cues_audio_duration_ceiling():
     assert "00:00:02,500 --> 00:00:03,500" in blocks[1]
     # Third cue starts after or is clamped out
     assert not any("Third cue" in b for b in blocks)
+
+
+def test_format_subtitle_cues_emphasis_keywords_highlighting():
+    cue = "1\n00:00:00,000 --> 00:00:03,000\nQuantum entanglement allows non-local particle correlations."
+    formatted = format_subtitle_cues(
+        cue, highlight_keywords=["entanglement", "correlations"]
+    )
+    assert "<entanglement>" in formatted
+    assert "<correlations>" in formatted

@@ -33,6 +33,7 @@ def format_subtitle_cues(
     max_line_length: int = 40,
     min_duration: float = 1.2,
     audio_duration_ceiling: Optional[float] = None,
+    highlight_keywords: Optional[list] = None,
 ) -> str:
     """
     Wraps subtitle cue text, enforces a minimum display duration threshold,
@@ -92,6 +93,15 @@ def format_subtitle_cues(
         )
         # Normalize whitespace and ensure clean word wrapping without breaking mid-word
         clean_text = " ".join(cue_text.strip().split())
+
+        # If highlight keywords provided, format keywords for emphasis
+        if highlight_keywords:
+            import re
+
+            for kw in highlight_keywords:
+                pattern = re.compile(rf"\b({re.escape(kw)})\b", re.IGNORECASE)
+                clean_text = pattern.sub(r"<\1>", clean_text)
+
         wrapped_lines = textwrap.wrap(
             clean_text, width=max_line_length, break_long_words=False
         )

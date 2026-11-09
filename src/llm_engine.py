@@ -106,6 +106,14 @@ class Scene(BaseModel):
             "'dramatic_revelation', or 'summary_call_to_action'."
         ),
     )
+    voice_tone: Optional[str] = Field(
+        default="calm_educational",
+        description="Narration tone: 'authoritative_documentary', 'enthusiastic_explainer', 'calm_educational'.",
+    )
+    emphasis_keywords: Optional[List[str]] = Field(
+        default_factory=list,
+        description="Key conceptual tokens to stress in audio TTS and highlight in subtitles.",
+    )
     image_path: str = Field(
         description="Path to save the generated image. Use 'assets/images/{project_id}_scene_{sequence}.png'"
     )
@@ -441,6 +449,10 @@ def generate_script_from_text(
                 "color_palette": palette,
                 "artistic_medium": medium,
                 "pacing_tempo": pacing,
+                "voice_tone": (
+                    "calm_educational" if index > 1 else "enthusiastic_explainer"
+                ),
+                "emphasis_keywords": entities[:3] if entities else [],
                 "image_path": f"assets/images/{project_id}_scene_{index}.png",
                 "voiceover_path": f"assets/audio/{project_id}_scene_{index}.mp3",
             }

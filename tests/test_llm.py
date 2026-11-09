@@ -375,6 +375,19 @@ def test_scene_pacing_tempo_and_schema_conformance():
     jsonschema.validate(instance=result, schema=SCHEMA)
 
 
+def test_scene_voice_tone_and_emphasis_keywords():
+    raw_text = "Photosynthesis requires carbon dioxide, water, and sunlight energy."
+    result = generate_script_from_text(raw_text, project_id="botany_tone")
+    scene = result["scenes"][0]
+
+    assert "voice_tone" in scene
+    assert "emphasis_keywords" in scene
+    assert isinstance(scene["emphasis_keywords"], list)
+
+    # Validate against formal schema
+    jsonschema.validate(instance=result, schema=SCHEMA)
+
+
 def test_compose_scene_visual_prompt_canvas_format_spatial_layout():
     scene = {
         "text": "Deep sea hydrothermal vents.",
