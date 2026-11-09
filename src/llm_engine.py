@@ -146,7 +146,9 @@ def get_llm_client():
 
 
 def compose_scene_visual_prompt(
-    scene: dict, global_style_anchor: Optional[str] = None
+    scene: dict,
+    global_style_anchor: Optional[str] = None,
+    include_negatives: bool = False,
 ) -> str:
     """
     Synthesizes a cohesive, composite visual prompt for image generation,
@@ -176,6 +178,12 @@ def compose_scene_visual_prompt(
     res = ". ".join(parts)
     if not res.endswith("."):
         res += "."
+
+    if include_negatives:
+        neg = scene.get("negative_prompt") or DEFAULT_NEGATIVE_PROMPT
+        if neg:
+            res += f" Avoid: {neg}."
+
     return res
 
 

@@ -169,6 +169,15 @@ def test_compile_video_with_canvas_format_override(
     assert crop_kwargs.get("w") == 1080
     assert crop_kwargs.get("h") == 1920
 
+    # Verify canvas-adaptive subtitle font size is 28 for portrait
+    sub_filter_calls = [
+        call
+        for call in mock_node.filter.mock_calls
+        if call.args and call.args[0] == "subtitles"
+    ]
+    assert len(sub_filter_calls) > 0
+    assert "FontSize=28" in sub_filter_calls[0].kwargs.get("force_style", "")
+
 
 @patch("src.audio_engine.edge_tts.Communicate")
 @patch("src.audio_engine.edge_tts.SubMaker")

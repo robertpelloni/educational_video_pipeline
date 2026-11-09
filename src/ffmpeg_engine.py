@@ -91,16 +91,19 @@ def compile_video(
                 pass
 
         if has_subtitles:
-            # Enhanced subtitle styling for crisp, high-visibility readability
+            # Canvas-adaptive font sizing: larger point size for vertical mobile screens
+            font_size = 28 if canvas_format == "portrait" else 22
+            margin_v = 50 if canvas_format == "portrait" else 35
+
             sub_style = (
-                "FontSize=22,"
+                f"FontSize={font_size},"
                 "PrimaryColour=&H00FFFFFF,"
                 "OutlineColour=&H00000000,"
                 "BackColour=&H80000000,"
                 "BorderStyle=3,"
                 "Outline=2,"
                 "Shadow=1,"
-                "MarginV=35,"
+                f"MarginV={margin_v},"
                 "Alignment=2"
             )
             v_stream = v_stream.filter("subtitles", srt_file, force_style=sub_style)

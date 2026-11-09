@@ -211,3 +211,14 @@ def test_compose_scene_visual_prompt():
     assert "Framing: macro zoom cutaway" in composite
     assert "Lighting: cool volumetric medical lighting" in composite
     assert "Style: crisp vector digital schematic" in composite
+
+
+def test_compose_scene_visual_prompt_with_negative_tokens():
+    scene = {
+        "text": "The solar flare erupts.",
+        "visual_prompt": "Solar prominence rising from the chromosphere",
+        "negative_prompt": "low resolution, text watermark, distortion",
+    }
+    composite = compose_scene_visual_prompt(scene, include_negatives=True)
+    assert "Solar prominence rising from the chromosphere" in composite
+    assert "Avoid: low resolution, text watermark, distortion." in composite
