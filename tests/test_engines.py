@@ -377,3 +377,25 @@ def test_audio_engine_minimum_cue_duration():
     short_cue = "1\n00:00:01,000 --> 00:00:01,300\nQuick word"
     formatted = format_subtitle_cues(short_cue, min_duration=1.2)
     assert "00:00:01,000 --> 00:00:02,200" in formatted
+
+
+def test_format_subtitle_cues_chronological_sorting_and_overlap_deduplication():
+    # Provide cues out of order with overlapping timestamps
+    out_of_order_cues = (
+        "2\n00:00:03,000 --> 00:00:05,000\nSecond cue occurring later.\n\n"
+        "1\n00:00:01,000 --> 00:00:03,500\nFirst cue overlapping with second.\n\n"
+        "3\n00:00:04,500 --> 00:00:06,000\nThird cue overlapping with second."
+    )
+    formatted = format_subtitle_cues(out_of_order_cues, min_duration=1.0)
+    blocks = [b.strip() for b in formatted.strip().split("\n\n") if b.strip()]
+
+    assert len(blocks) == 3
+    # Check numbering is resequenced 1, 2, 3
+    assert blocks[0].startswith("1\n00:00:01,000 --> 00:00:02,950")
+    assert "First cue overlapping" in blocks[0]
+
+    assert blocks[1].startswith("2\n00:00:03,000 --> 00:00:04,450")
+    assert "Second cue occurring later" in blocks[1]
+
+    assert blocks[2].startswith("3\n00:00:04,500 --> 00:00:06,000")
+    assert "Third cue overlapping with second" in blocks[2]

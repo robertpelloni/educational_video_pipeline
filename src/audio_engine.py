@@ -31,19 +31,18 @@ def format_subtitle_cues(
     srt_content: str, max_line_length: int = 40, min_duration: float = 1.2
 ) -> str:
     """
-    Wraps subtitle cue text and enforces a minimum display duration threshold
-    to prevent rapid flashing and visual truncation on screen.
+    Wraps subtitle cue text, enforces a minimum display duration threshold,
+    and resolves chronological cue overlaps to guarantee smooth, collision-free playback.
     """
     if not srt_content:
         return ""
 
     blocks = srt_content.strip().split("\n\n")
-    formatted_blocks = []
+    parsed_cues = []
 
     for block in blocks:
         lines = block.strip().split("\n")
         if len(lines) >= 3:
-            seq_num = lines[0]
             timing = lines[1]
             cue_text = " ".join(lines[2:])
 
@@ -53,12 +52,33 @@ def format_subtitle_cues(
                 end_sec = parse_srt_timestamp(end_str.strip())
                 if end_sec - start_sec < min_duration:
                     end_sec = start_sec + min_duration
-                    timing = f"{format_srt_timestamp(start_sec)} --> {format_srt_timestamp(end_sec)}"
+                parsed_cues.append((start_sec, end_sec, cue_text))
+            else:
+                parsed_cues.append((0.0, min_duration, cue_text))
 
-            wrapped_lines = textwrap.wrap(cue_text, width=max_line_length)
-            formatted_blocks.append(f"{seq_num}\n{timing}\n" + "\n".join(wrapped_lines))
-        else:
-            formatted_blocks.append(block)
+    # Sort chronologically by start timestamp
+    parsed_cues.sort(key=lambda x: x[0])
+
+    # Deduplicate / adjust overlaps so cues don't collide
+    # Clamp preceding cue's end if next cue starts earlier, ensuring a tiny 50ms buffer
+    adjusted_cues = []
+    for i in range(len(parsed_cues)):
+        start_sec, end_sec, cue_text = parsed_cues[i]
+        if i + 1 < len(parsed_cues):
+            next_start = parsed_cues[i + 1][0]
+            if end_sec > next_start:
+                end_sec = max(start_sec + 0.1, next_start - 0.05)
+        if end_sec <= start_sec:
+            end_sec = start_sec + min_duration
+        adjusted_cues.append((start_sec, end_sec, cue_text))
+
+    formatted_blocks = []
+    for idx, (start_sec, end_sec, cue_text) in enumerate(adjusted_cues, start=1):
+        timing = (
+            f"{format_srt_timestamp(start_sec)} --> {format_srt_timestamp(end_sec)}"
+        )
+        wrapped_lines = textwrap.wrap(cue_text, width=max_line_length)
+        formatted_blocks.append(f"{idx}\n{timing}\n" + "\n".join(wrapped_lines))
 
     return "\n\n".join(formatted_blocks) + "\n"
 

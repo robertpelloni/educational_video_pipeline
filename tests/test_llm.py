@@ -263,3 +263,37 @@ def test_scene_focal_point_schema():
     )
     dumped = scene.model_dump()
     assert dumped["focal_point"] == "center"
+
+
+def test_compose_scene_visual_prompt_sanitization_and_bounds():
+    # Test excess whitespace, trailing punctuation normalization, negative prompt deduplication, and word bounding
+    scene = {
+        "text": "Quantum entanglement demonstrates non-local particle correlations.",
+        "visual_prompt": "   Two entangled photons emitting synchronized wavepackets ...   ",
+        "camera_angle": "  macro close-up cutaway , ",
+        "lighting_setup": "  neon ultraviolet luminescence  ",
+        "visual_style_anchor": "  hyper-detailed scientific visualization .  ",
+        "negative_prompt": "blur, low quality, artifacts, watermark",
+    }
+    composite = compose_scene_visual_prompt(
+        scene, include_negatives=True, max_words=100
+    )
+
+    # Whitespace normalized
+    assert "  " not in composite
+    assert "Two entangled photons emitting synchronized wavepackets." in composite
+    assert "Framing: macro close-up cutaway." in composite
+    assert "Lighting: neon ultraviolet luminescence." in composite
+    assert "Style: hyper-detailed scientific visualization." in composite
+    assert "Avoid: blur, low quality, artifacts, watermark." in composite
+
+    # Check max words bounding
+    words = composite.split()
+    assert len(words) <= 100
+
+    # Test extreme length truncation bound
+    scene_long = {
+        "visual_prompt": "word " * 400,
+    }
+    truncated_composite = compose_scene_visual_prompt(scene_long, max_words=50)
+    assert len(truncated_composite.split()) <= 50

@@ -169,6 +169,7 @@ def compose_scene_visual_prompt(
     scene: dict,
     global_style_anchor: Optional[str] = None,
     include_negatives: bool = False,
+    max_words: int = 300,
 ) -> str:
     """
     Synthesizes a cohesive, composite visual prompt for image generation,
@@ -177,40 +178,57 @@ def compose_scene_visual_prompt(
     """
     parts = []
 
+    def clean_token(val: str) -> str:
+        v = val.strip()
+        v = v.rstrip(".,; ")
+        return v
+
     visual_prompt = (
         scene.get("visual_prompt")
         or f"Educational illustration regarding: {scene.get('text', '')}"
     )
-    parts.append(visual_prompt.rstrip("."))
+    parts.append(clean_token(visual_prompt))
 
     camera_angle = scene.get("camera_angle")
     if camera_angle and camera_angle not in visual_prompt:
-        parts.append(f"Framing: {camera_angle}")
+        parts.append(f"Framing: {clean_token(camera_angle)}")
 
     lighting = scene.get("lighting_setup")
     if lighting and lighting not in visual_prompt:
-        parts.append(f"Lighting: {lighting}")
+        parts.append(f"Lighting: {clean_token(lighting)}")
 
     palette = scene.get("color_palette")
     if palette and palette not in visual_prompt:
-        parts.append(f"Palette: {palette}")
+        parts.append(f"Palette: {clean_token(palette)}")
 
     medium = scene.get("artistic_medium")
     if medium and medium not in visual_prompt:
-        parts.append(f"Medium: {medium}")
+        parts.append(f"Medium: {clean_token(medium)}")
 
     style = scene.get("visual_style_anchor") or global_style_anchor
     if style and style not in visual_prompt:
-        parts.append(f"Style: {style}")
+        parts.append(f"Style: {clean_token(style)}")
 
-    res = ". ".join(parts)
+    res = ". ".join(p for p in parts if p)
+    # Normalize excessive spaces and sanitize redundant punctuation
+    import re
+
+    res = re.sub(r"\s+", " ", res).strip()
+    res = re.sub(r"\s+([.,])", r"\1", res)
+    res = re.sub(r"\.{2,}", ".", res)
+
     if not res.endswith("."):
         res += "."
 
     if include_negatives:
         neg = scene.get("negative_prompt") or DEFAULT_NEGATIVE_PROMPT
         if neg:
-            res += f" Avoid: {neg}."
+            res += f" Avoid: {neg.strip()}."
+
+    # Enforce optimal token length bound for image generator APIs
+    words = res.split()
+    if len(words) > max_words:
+        res = " ".join(words[:max_words]).rstrip(".") + "."
 
     return res
 
