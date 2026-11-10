@@ -34,6 +34,7 @@ def format_subtitle_cues(
     min_duration: float = 1.2,
     audio_duration_ceiling: Optional[float] = None,
     highlight_keywords: Optional[list] = None,
+    reading_level: Optional[str] = "general_public",
 ) -> str:
     """
     Wraps subtitle cue text, enforces a minimum display duration threshold,
@@ -65,13 +66,20 @@ def format_subtitle_cues(
     # Sort chronologically by start timestamp
     parsed_cues.sort(key=lambda x: x[0])
 
-    # Adaptive reading speed splitting: split cues with reading speed > 22 chars/sec
+    # Determine max reading CPS threshold based on audience level
+    cps_limit = 22.0
+    if reading_level == "elementary":
+        cps_limit = 15.0
+    elif reading_level == "academic_specialist":
+        cps_limit = 26.0
+
+    # Adaptive reading speed splitting: split cues exceeding reading speed threshold
     split_cues = []
     for start_sec, end_sec, cue_text in parsed_cues:
         duration = max(0.5, end_sec - start_sec)
         cps = len(cue_text) / duration
         words = cue_text.split()
-        if cps > 22.0 and len(words) >= 6:
+        if cps > cps_limit and len(words) >= 6:
             mid = len(words) // 2
             half_dur = duration / 2.0
             split_cues.append((start_sec, start_sec + half_dur, " ".join(words[:mid])))

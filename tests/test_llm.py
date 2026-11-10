@@ -394,6 +394,18 @@ def test_validate_visual_prompt_quality():
     assert len(res_rich["missing"]) == 0
 
 
+def test_scene_audience_reading_level_schema():
+    scene = Scene(
+        sequence=1,
+        text="Simple explanation for young students.",
+        image_path="assets/images/1.png",
+        voiceover_path="assets/audio/1.mp3",
+        audience_reading_level="elementary",
+    )
+    dumped = scene.model_dump()
+    assert dumped["audience_reading_level"] == "elementary"
+
+
 def test_scene_depth_of_field_and_atmospheric_mood_prompt_tokens():
     scene = {
         "text": "Cellular mitosis occurring in embryonic stem cells.",

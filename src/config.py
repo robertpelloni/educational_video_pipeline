@@ -21,6 +21,10 @@ SCHEMA = {
         "negative_prompt": {"type": ["string", "null"]},
         "color_palette": {"type": ["string", "null"]},
         "artistic_medium": {"type": ["string", "null"]},
+        "audience_reading_level": {
+            "type": ["string", "null"],
+            "enum": ["elementary", "general_public", "academic_specialist", None],
+        },
         "scenes": {
             "type": "array",
             "items": {
@@ -40,6 +44,15 @@ SCHEMA = {
                     "voice_tone": {"type": ["string", "null"]},
                     "depth_of_field": {"type": ["string", "null"]},
                     "atmospheric_mood": {"type": ["string", "null"]},
+                    "audience_reading_level": {
+                        "type": ["string", "null"],
+                        "enum": [
+                            "elementary",
+                            "general_public",
+                            "academic_specialist",
+                            None,
+                        ],
+                    },
                     "emphasis_keywords": {
                         "type": "array",
                         "items": {"type": "string"},

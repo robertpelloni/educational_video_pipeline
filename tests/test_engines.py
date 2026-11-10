@@ -445,6 +445,27 @@ def test_format_subtitle_cues_reading_speed_adaptive_splitting():
     assert "for all living organisms" in blocks[1]
 
 
+def test_format_subtitle_cues_elementary_reading_level_threshold():
+    # Medium speed cue (~18 cps: 54 chars in 3.0s) splits under elementary (15 cps) but not general (22 cps)
+    cue = (
+        "1\n00:00:00,000 --> 00:00:03,000\n"
+        "The gentle turtle crawls very slowly across green moss."
+    )
+    # Under general_public (limit 22) -> 18 cps <= 22 cps, so no split
+    formatted_gen = format_subtitle_cues(
+        cue, min_duration=0.5, reading_level="general_public"
+    )
+    blocks_gen = [b for b in formatted_gen.strip().split("\n\n") if b]
+    assert len(blocks_gen) == 1
+
+    # Under elementary (limit 15) -> 18 cps > 15 cps, so splits into 2 sub-cues
+    formatted_elem = format_subtitle_cues(
+        cue, min_duration=0.5, reading_level="elementary"
+    )
+    blocks_elem = [b for b in formatted_elem.strip().split("\n\n") if b]
+    assert len(blocks_elem) == 2
+
+
 def test_format_subtitle_cues_emphasis_keywords_highlighting():
     cue = "1\n00:00:00,000 --> 00:00:03,000\nQuantum entanglement allows non-local particle correlations."
     formatted = format_subtitle_cues(

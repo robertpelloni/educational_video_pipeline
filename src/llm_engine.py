@@ -118,6 +118,12 @@ class Scene(BaseModel):
         default="clean pristine studio clarity",
         description="Environmental atmospheric mood (e.g. 'subtle volumetric haze', 'pristine studio clarity').",
     )
+    audience_reading_level: Optional[
+        Literal["elementary", "general_public", "academic_specialist"]
+    ] = Field(
+        default="general_public",
+        description="Target educational vocabulary and complexity level.",
+    )
     emphasis_keywords: Optional[List[str]] = Field(
         default_factory=list,
         description="Key conceptual tokens to stress in audio TTS and highlight in subtitles.",
@@ -171,6 +177,12 @@ class VideoScript(BaseModel):
     artistic_medium: Optional[str] = Field(
         default="digital vector illustration",
         description="Global artistic medium applied across the video.",
+    )
+    audience_reading_level: Optional[
+        Literal["elementary", "general_public", "academic_specialist"]
+    ] = Field(
+        default="general_public",
+        description="Global audience reading difficulty level.",
     )
     platforms: List[Literal["youtube", "tiktok", "instagram", "twitter"]] = Field(
         default=["youtube", "tiktok", "instagram", "twitter"]
