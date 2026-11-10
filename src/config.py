@@ -45,6 +45,7 @@ SCHEMA = {
                     "voice_tone": {"type": ["string", "null"]},
                     "depth_of_field": {"type": ["string", "null"]},
                     "atmospheric_mood": {"type": ["string", "null"]},
+                    "subject_consistency_tag": {"type": ["string", "null"]},
                     "audience_reading_level": {
                         "type": ["string", "null"],
                         "enum": [

@@ -431,6 +431,16 @@ def test_scene_voice_tone_and_emphasis_keywords():
     jsonschema.validate(instance=result, schema=SCHEMA)
 
 
+def test_compose_scene_visual_prompt_subject_consistency_tag():
+    scene = {
+        "text": "The lunar rover navigates the crater rim.",
+        "visual_prompt": "Astronaut operating rover vehicle on Moon surface",
+        "subject_consistency_tag": "apollo_17_rover_chassis",
+    }
+    composite = compose_scene_visual_prompt(scene)
+    assert "Subject anchor: [apollo_17_rover_chassis]" in composite
+
+
 def test_compose_scene_visual_prompt_camera_motion_tokens():
     scene = {
         "text": "The nebula radiates ultraviolet light.",

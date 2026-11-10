@@ -122,6 +122,10 @@ class Scene(BaseModel):
         default="clean pristine studio clarity",
         description="Environmental atmospheric mood (e.g. 'subtle volumetric haze', 'pristine studio clarity').",
     )
+    subject_consistency_tag: Optional[str] = Field(
+        default=None,
+        description="Explicit subject identity token (e.g. 'apollo_lander') to anchor generative continuity.",
+    )
     audience_reading_level: Optional[
         Literal["elementary", "general_public", "academic_specialist"]
     ] = Field(
@@ -331,6 +335,10 @@ def compose_scene_visual_prompt(
     focal_subject = scene.get("focal_subject")
     if focal_subject and focal_subject not in visual_prompt:
         parts.append(f"Primary focal subject: {clean_token(focal_subject)}")
+
+    consistency_tag = scene.get("subject_consistency_tag")
+    if consistency_tag and consistency_tag not in visual_prompt:
+        parts.append(f"Subject anchor: [{clean_token(consistency_tag)}]")
 
     camera_angle = scene.get("camera_angle")
     if camera_angle and camera_angle not in visual_prompt:
