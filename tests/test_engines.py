@@ -169,7 +169,7 @@ def test_compile_video_with_canvas_format_override(
     assert crop_kwargs.get("w") == 1080
     assert crop_kwargs.get("h") == 1920
 
-    # Verify canvas-adaptive subtitle font size is 28 for portrait
+    # Verify canvas-adaptive subtitle font size is 28 and MarginV=65 for portrait
     sub_filter_calls = [
         call
         for call in mock_node.filter.mock_calls
@@ -177,6 +177,7 @@ def test_compile_video_with_canvas_format_override(
     ]
     assert len(sub_filter_calls) > 0
     assert "FontSize=28" in sub_filter_calls[0].kwargs.get("force_style", "")
+    assert "MarginV=65" in sub_filter_calls[0].kwargs.get("force_style", "")
 
 
 @patch("src.ffmpeg_engine.ffmpeg")

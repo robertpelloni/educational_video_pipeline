@@ -87,6 +87,10 @@ class Scene(BaseModel):
         default="eye-level centered macro framing",
         description="Camera perspective or shot angle (e.g. eye-level, low-angle, top-down schematic, cutaway).",
     )
+    camera_motion: Optional[str] = Field(
+        default="subtle cinematic slow push-in zoom",
+        description="Dynamic camera movement vector (e.g. 'slow push-in zoom', 'steady lateral pan', 'static shot').",
+    )
     color_palette: Optional[str] = Field(
         default="balanced scientific educational hues with high-contrast accents",
         description="Cohesive color grading palette (e.g. vibrant indigo, golden amber, deep neutral slate).",
@@ -331,6 +335,10 @@ def compose_scene_visual_prompt(
     camera_angle = scene.get("camera_angle")
     if camera_angle and camera_angle not in visual_prompt:
         parts.append(f"Framing: {clean_token(camera_angle)}")
+
+    camera_motion = scene.get("camera_motion")
+    if camera_motion and camera_motion not in visual_prompt:
+        parts.append(f"Motion: {clean_token(camera_motion)}")
 
     # Add canvas format spatial framing directive if provided
     fmt = canvas_format or scene.get("canvas_format")

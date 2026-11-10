@@ -431,6 +431,16 @@ def test_scene_voice_tone_and_emphasis_keywords():
     jsonschema.validate(instance=result, schema=SCHEMA)
 
 
+def test_compose_scene_visual_prompt_camera_motion_tokens():
+    scene = {
+        "text": "The nebula radiates ultraviolet light.",
+        "visual_prompt": "Glowing cosmic dust cloud",
+        "camera_motion": "slow cinematic push-in zoom",
+    }
+    composite = compose_scene_visual_prompt(scene)
+    assert "Motion: slow cinematic push-in zoom" in composite
+
+
 def test_compose_scene_visual_prompt_canvas_format_spatial_layout():
     scene = {
         "text": "Deep sea hydrothermal vents.",

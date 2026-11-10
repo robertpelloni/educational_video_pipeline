@@ -127,9 +127,9 @@ def compile_video(
                 pass
 
         if has_subtitles:
-            # Canvas-adaptive font sizing and high-contrast shadow rendering
+            # Canvas-adaptive font sizing and calibrated vertical margins (higher margin on portrait to clear mobile UI)
             font_size = 28 if canvas_format == "portrait" else 22
-            margin_v = 50 if canvas_format == "portrait" else 35
+            margin_v = 65 if canvas_format == "portrait" else 35
 
             sub_style = (
                 f"FontName=Arial,"

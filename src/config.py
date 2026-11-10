@@ -37,6 +37,7 @@ SCHEMA = {
                     "negative_prompt": {"type": ["string", "null"]},
                     "lighting_setup": {"type": ["string", "null"]},
                     "camera_angle": {"type": ["string", "null"]},
+                    "camera_motion": {"type": ["string", "null"]},
                     "color_palette": {"type": ["string", "null"]},
                     "artistic_medium": {"type": ["string", "null"]},
                     "focal_point": {"type": ["string", "null"]},
