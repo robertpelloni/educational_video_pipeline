@@ -429,6 +429,22 @@ def test_format_subtitle_cues_audio_duration_ceiling():
     assert not any("Third cue" in b for b in blocks)
 
 
+def test_format_subtitle_cues_reading_speed_adaptive_splitting():
+    # Long fast sentence with high characters per second > 22
+    fast_cue = (
+        "1\n00:00:00,000 --> 00:00:01,800\n"
+        "Deoxyribonucleic acid carries the genetic instructions for all living organisms."
+    )
+    # Total chars = ~80 in 1.8 seconds (~44 cps)
+    formatted = format_subtitle_cues(fast_cue, min_duration=0.5)
+    blocks = [b.strip() for b in formatted.strip().split("\n\n") if b.strip()]
+
+    # Should be adaptively split into two readable sub-cues
+    assert len(blocks) == 2
+    assert "Deoxyribonucleic acid carries" in blocks[0]
+    assert "for all living organisms" in blocks[1]
+
+
 def test_format_subtitle_cues_emphasis_keywords_highlighting():
     cue = "1\n00:00:00,000 --> 00:00:03,000\nQuantum entanglement allows non-local particle correlations."
     formatted = format_subtitle_cues(

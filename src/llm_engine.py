@@ -246,6 +246,46 @@ def extract_key_visual_entities(text: str, max_entities: int = 5) -> List[str]:
     return deduped[:max_entities]
 
 
+def validate_visual_prompt_quality(prompt: str) -> dict:
+    """
+    Evaluates visual prompt quality score (0.0 - 1.0) based on specificity,
+    presence of framing directives, illumination cues, and tangible subject nouns.
+    """
+    if not prompt or len(prompt.strip()) == 0:
+        return {"score": 0.0, "is_valid": False, "missing": ["content"]}
+
+    missing = []
+    p_lower = prompt.lower()
+
+    if not any(
+        k in p_lower for k in ["framing:", "shot", "view", "close-up", "establishing"]
+    ):
+        missing.append("framing")
+
+    if not any(
+        k in p_lower for k in ["lighting:", "illumination", "light", "rim", "ambient"]
+    ):
+        missing.append("lighting")
+
+    if not any(
+        k in p_lower
+        for k in ["style:", "illustration", "cinematography", "render", "engraving"]
+    ):
+        missing.append("style")
+
+    word_count = len(prompt.split())
+    if word_count < 8:
+        missing.append("detail_depth")
+
+    score = max(0.2, (4 - len(missing)) / 4.0)
+    return {
+        "score": score,
+        "is_valid": score >= 0.5,
+        "missing": missing,
+        "word_count": word_count,
+    }
+
+
 def compose_scene_visual_prompt(
     scene: dict,
     global_style_anchor: Optional[str] = None,

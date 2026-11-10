@@ -65,13 +65,27 @@ def format_subtitle_cues(
     # Sort chronologically by start timestamp
     parsed_cues.sort(key=lambda x: x[0])
 
+    # Adaptive reading speed splitting: split cues with reading speed > 22 chars/sec
+    split_cues = []
+    for start_sec, end_sec, cue_text in parsed_cues:
+        duration = max(0.5, end_sec - start_sec)
+        cps = len(cue_text) / duration
+        words = cue_text.split()
+        if cps > 22.0 and len(words) >= 6:
+            mid = len(words) // 2
+            half_dur = duration / 2.0
+            split_cues.append((start_sec, start_sec + half_dur, " ".join(words[:mid])))
+            split_cues.append((start_sec + half_dur, end_sec, " ".join(words[mid:])))
+        else:
+            split_cues.append((start_sec, end_sec, cue_text))
+
     # Deduplicate / adjust overlaps so cues don't collide
     # Clamp preceding cue's end if next cue starts earlier, ensuring a tiny 50ms buffer
     adjusted_cues = []
-    for i in range(len(parsed_cues)):
-        start_sec, end_sec, cue_text = parsed_cues[i]
-        if i + 1 < len(parsed_cues):
-            next_start = parsed_cues[i + 1][0]
+    for i in range(len(split_cues)):
+        start_sec, end_sec, cue_text = split_cues[i]
+        if i + 1 < len(split_cues):
+            next_start = split_cues[i + 1][0]
             if end_sec > next_start:
                 end_sec = max(start_sec + 0.1, next_start - 0.05)
         if end_sec <= start_sec:

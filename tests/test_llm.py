@@ -5,6 +5,7 @@ from src.llm_engine import (
     generate_script_from_text,
     compose_scene_visual_prompt,
     extract_key_visual_entities,
+    validate_visual_prompt_quality,
     VideoScript,
     Scene,
     YouTubeMetadata,
@@ -373,6 +374,24 @@ def test_scene_pacing_tempo_and_schema_conformance():
 
     # Validate schema conforms
     jsonschema.validate(instance=result, schema=SCHEMA)
+
+
+def test_validate_visual_prompt_quality():
+    # Empty prompt fails
+    res_empty = validate_visual_prompt_quality("")
+    assert not res_empty["is_valid"]
+    assert res_empty["score"] == 0.0
+
+    # Rich, structured prompt passes with high score
+    rich_prompt = (
+        "Detailed cross-section view of plant chloroplast. Framing: macro close-up view. "
+        "Lighting: cool volumetric rim illumination. Style: hyper-detailed scientific illustration. "
+        "Optics: shallow bokeh. Atmosphere: pristine clarity."
+    )
+    res_rich = validate_visual_prompt_quality(rich_prompt)
+    assert res_rich["is_valid"]
+    assert res_rich["score"] >= 0.75
+    assert len(res_rich["missing"]) == 0
 
 
 def test_scene_depth_of_field_and_atmospheric_mood_prompt_tokens():
