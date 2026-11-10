@@ -38,6 +38,8 @@ SCHEMA = {
                     "focal_point": {"type": ["string", "null"]},
                     "pacing_tempo": {"type": ["string", "null"]},
                     "voice_tone": {"type": ["string", "null"]},
+                    "depth_of_field": {"type": ["string", "null"]},
+                    "atmospheric_mood": {"type": ["string", "null"]},
                     "emphasis_keywords": {
                         "type": "array",
                         "items": {"type": "string"},

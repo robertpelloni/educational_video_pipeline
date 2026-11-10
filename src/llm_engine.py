@@ -110,6 +110,14 @@ class Scene(BaseModel):
         default="calm_educational",
         description="Narration tone: 'authoritative_documentary', 'enthusiastic_explainer', 'calm_educational'.",
     )
+    depth_of_field: Optional[str] = Field(
+        default="subtle depth of field with sharp central focal plane",
+        description="Optical depth characteristics (e.g. 'shallow bokeh', 'deep universal focus').",
+    )
+    atmospheric_mood: Optional[str] = Field(
+        default="clean pristine studio clarity",
+        description="Environmental atmospheric mood (e.g. 'subtle volumetric haze', 'pristine studio clarity').",
+    )
     emphasis_keywords: Optional[List[str]] = Field(
         default_factory=list,
         description="Key conceptual tokens to stress in audio TTS and highlight in subtitles.",
@@ -286,6 +294,14 @@ def compose_scene_visual_prompt(
     palette = scene.get("color_palette")
     if palette and palette not in visual_prompt:
         parts.append(f"Palette: {clean_token(palette)}")
+
+    dof = scene.get("depth_of_field")
+    if dof and dof not in visual_prompt:
+        parts.append(f"Optics: {clean_token(dof)}")
+
+    mood = scene.get("atmospheric_mood")
+    if mood and mood not in visual_prompt:
+        parts.append(f"Atmosphere: {clean_token(mood)}")
 
     medium = scene.get("artistic_medium")
     if medium and medium not in visual_prompt:

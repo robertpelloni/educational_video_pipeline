@@ -375,6 +375,18 @@ def test_scene_pacing_tempo_and_schema_conformance():
     jsonschema.validate(instance=result, schema=SCHEMA)
 
 
+def test_scene_depth_of_field_and_atmospheric_mood_prompt_tokens():
+    scene = {
+        "text": "Cellular mitosis occurring in embryonic stem cells.",
+        "visual_prompt": "Fluorescence microscope view of dividing chromatids",
+        "depth_of_field": "shallow optical slice",
+        "atmospheric_mood": "fluorescent cytoplasmic bioluminescence",
+    }
+    composite = compose_scene_visual_prompt(scene)
+    assert "Optics: shallow optical slice" in composite
+    assert "Atmosphere: fluorescent cytoplasmic bioluminescence" in composite
+
+
 def test_scene_voice_tone_and_emphasis_keywords():
     raw_text = "Photosynthesis requires carbon dioxide, water, and sunlight energy."
     result = generate_script_from_text(raw_text, project_id="botany_tone")
