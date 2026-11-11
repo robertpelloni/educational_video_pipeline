@@ -15,6 +15,8 @@ def generate_image_from_prompt(
     api_url: str = "http://127.0.0.1:7860/sdapi/v1/txt2img",
     negative_prompt: Optional[str] = None,
     style_anchor: Optional[str] = None,
+    canvas_format: Optional[str] = "portrait",
+    subject_consistency_tag: Optional[str] = None,
 ) -> bool:
     """
     Interfaces with a standard local Stable Diffusion WebUI API (AUTOMATIC1111)
@@ -41,17 +43,26 @@ def generate_image_from_prompt(
     # Ensure the output directory exists
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
 
-    # Combine prompt with visual style anchor if provided and not already present
+    # Combine prompt with visual style anchor and subject consistency tag if provided
     composite_prompt = prompt
+    if subject_consistency_tag and subject_consistency_tag not in prompt:
+        composite_prompt = (
+            f"{composite_prompt.rstrip('.')}. Subject: [{subject_consistency_tag}]"
+        )
     if style_anchor and style_anchor not in prompt:
-        composite_prompt = f"{prompt.rstrip('.')}. Visual Style: {style_anchor}"
+        composite_prompt = (
+            f"{composite_prompt.rstrip('.')}. Visual Style: {style_anchor}"
+        )
+
+    # Adapt resolution based on canvas format
+    width, height = (1920, 1080) if canvas_format == "landscape" else (1080, 1920)
 
     payload = {
         "prompt": composite_prompt,
         "negative_prompt": negative_prompt or "",
         "steps": 20,
-        "width": 1080,  # Defaulting to portrait/Shorts width
-        "height": 1920,  # Defaulting to portrait/Shorts height
+        "width": width,
+        "height": height,
         "cfg_scale": 7.0,
         "sampler_name": "Euler a",
     }

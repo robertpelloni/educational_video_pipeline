@@ -75,6 +75,8 @@ def test_generate_image_with_negative_prompt_and_style_anchor(mock_urlopen, tmp_
         output_path=output_path,
         negative_prompt=negative_prompt,
         style_anchor=style_anchor,
+        canvas_format="landscape",
+        subject_consistency_tag="human_retina_macula",
     )
 
     assert success is True
@@ -87,7 +89,10 @@ def test_generate_image_with_negative_prompt_and_style_anchor(mock_urlopen, tmp_
 
     assert "Cross-section diagram of the human eye" in request_payload["prompt"]
     assert "Visual Style: hyper-detailed textbook diagram" in request_payload["prompt"]
+    assert "Subject: [human_retina_macula]" in request_payload["prompt"]
     assert request_payload["negative_prompt"] == negative_prompt
+    assert request_payload["width"] == 1920
+    assert request_payload["height"] == 1080
 
 
 @patch("src.image_engine.urllib.request.urlopen")
