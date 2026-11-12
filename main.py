@@ -13,7 +13,7 @@ from src.tiktok_publisher import upload_video as tiktok_upload
 from src.instagram_publisher import upload_video as instagram_upload
 from src.twitter_publisher import upload_video as twitter_upload
 from src.ingestion_engine import fetch_wikipedia_summary
-from src.llm_engine import generate_script_from_text
+from src.llm_engine import generate_script_from_text, compose_scene_visual_prompt
 from src.analytics_engine import fetch_platform_analytics
 from src.image_engine import generate_image_from_prompt
 
@@ -72,7 +72,9 @@ def main():
 
             # 1c. LLM Structure
             config = generate_script_from_text(
-                raw_text, project_id=project_id, analytics_feedback=feedback_summary
+                raw_text,
+                project_id=project_id,
+                analytics_feedback=feedback_summary,
             )
             jsonschema.validate(instance=config, schema=SCHEMA)
 
@@ -81,11 +83,18 @@ def main():
             for scene in config.get("scenes", []):
                 image_path = scene.get("image_path")
                 if image_path and not os.path.exists(image_path):
-                    prompt = (
-                        scene.get("visual_prompt")
-                        or f"Educational illustration regarding: {scene.get('text')}"
+                    composite_prompt = compose_scene_visual_prompt(
+                        scene, config.get("visual_style_anchor")
                     )
-                    generate_image_from_prompt(prompt, image_path)
+                    negative_prompt = scene.get("negative_prompt") or config.get(
+                        "negative_prompt"
+                    )
+                    generate_image_from_prompt(
+                        composite_prompt,
+                        image_path,
+                        negative_prompt=negative_prompt,
+                        style_anchor=None,
+                    )
 
         else:
             # Step 1: Parse and validate explicit file configuration

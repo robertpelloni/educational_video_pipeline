@@ -17,6 +17,14 @@ SCHEMA = {
         },
         "background_music": {"type": "string"},
         "global_music_volume_db": {"type": "number"},
+        "visual_style_anchor": {"type": ["string", "null"]},
+        "negative_prompt": {"type": ["string", "null"]},
+        "color_palette": {"type": ["string", "null"]},
+        "artistic_medium": {"type": ["string", "null"]},
+        "audience_reading_level": {
+            "type": ["string", "null"],
+            "enum": ["elementary", "general_public", "academic_specialist", None],
+        },
         "scenes": {
             "type": "array",
             "items": {
@@ -25,6 +33,32 @@ SCHEMA = {
                     "sequence": {"type": "integer"},
                     "text": {"type": "string"},
                     "visual_prompt": {"type": ["string", "null"]},
+                    "visual_style_anchor": {"type": ["string", "null"]},
+                    "negative_prompt": {"type": ["string", "null"]},
+                    "lighting_setup": {"type": ["string", "null"]},
+                    "camera_angle": {"type": ["string", "null"]},
+                    "camera_motion": {"type": ["string", "null"]},
+                    "color_palette": {"type": ["string", "null"]},
+                    "artistic_medium": {"type": ["string", "null"]},
+                    "focal_point": {"type": ["string", "null"]},
+                    "pacing_tempo": {"type": ["string", "null"]},
+                    "voice_tone": {"type": ["string", "null"]},
+                    "depth_of_field": {"type": ["string", "null"]},
+                    "atmospheric_mood": {"type": ["string", "null"]},
+                    "subject_consistency_tag": {"type": ["string", "null"]},
+                    "audience_reading_level": {
+                        "type": ["string", "null"],
+                        "enum": [
+                            "elementary",
+                            "general_public",
+                            "academic_specialist",
+                            None,
+                        ],
+                    },
+                    "emphasis_keywords": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
                     "image_path": {"type": "string"},
                     "voiceover_path": {"type": "string"},
                     "choices": {

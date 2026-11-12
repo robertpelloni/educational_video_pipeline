@@ -59,8 +59,42 @@ def compile_video(
         # Get exact duration of speech
         duration = get_audio_duration(audio_file)
 
-        # Video: Input image, loop for duration, scale/crop, apply basic "zoom" pan effect
-        # zoompan generates frames internally, so we don't loop the input image
+        # Inspect subtitle end timestamp to ensure video duration encompasses all subtitle cues
+        srt_file = os.path.splitext(audio_file)[0] + ".srt"
+        if os.path.exists(srt_file) and os.path.isfile(srt_file):
+            try:
+                with open(srt_file, "r", encoding="utf-8") as f:
+                    content = f.read()
+                from src.audio_engine import parse_srt_timestamp
+
+                for line in content.splitlines():
+                    if " --> " in line:
+                        _, end_str = line.split(" --> ")
+                        cue_end = parse_srt_timestamp(end_str.strip())
+                        if cue_end > duration:
+                            duration = cue_end
+            except Exception as e:
+                logger.debug(f"Could not read subtitle end-time for scene {seq}: {e}")
+
+        # Focal-point mapped zoompan coordinates to preserve visual composition
+        focal_point = (scene.get("focal_point") or "center").lower()
+        if focal_point == "top":
+            pan_x = "(iw-iw/zoom)/2"
+            pan_y = "0"
+        elif focal_point == "bottom":
+            pan_x = "(iw-iw/zoom)/2"
+            pan_y = "ih-ih/zoom"
+        elif focal_point == "left":
+            pan_x = "0"
+            pan_y = "(ih-ih/zoom)/2"
+        elif focal_point == "right":
+            pan_x = "iw-iw/zoom"
+            pan_y = "(ih-ih/zoom)/2"
+        else:  # default center
+            pan_x = "(iw-iw/zoom)/2"
+            pan_y = "(ih-ih/zoom)/2"
+
+        # Video: Input image, loop for duration, scale/crop, apply focal-guided zoompan effect
         v_stream = (
             ffmpeg.input(image_file)
             .filter(
@@ -72,6 +106,8 @@ def compile_video(
             .filter(
                 "zoompan",
                 z="min(zoom+0.001,1.04)",
+                x=pan_x,
+                y=pan_y,
                 d=math.ceil(duration * 24),
                 s=f"{target_w}x{target_h}",
                 fps=24,
@@ -91,7 +127,23 @@ def compile_video(
                 pass
 
         if has_subtitles:
-            v_stream = v_stream.filter("subtitles", srt_file)
+            # Canvas-adaptive font sizing and calibrated vertical margins (higher margin on portrait to clear mobile UI)
+            font_size = 28 if canvas_format == "portrait" else 22
+            margin_v = 65 if canvas_format == "portrait" else 35
+
+            sub_style = (
+                f"FontName=Arial,"
+                f"FontSize={font_size},"
+                "PrimaryColour=&H00FFFFFF,"
+                "OutlineColour=&H00000000,"
+                "BackColour=&H80000000,"
+                "BorderStyle=3,"
+                "Outline=2,"
+                "Shadow=2,"
+                f"MarginV={margin_v},"
+                "Alignment=2"
+            )
+            v_stream = v_stream.filter("subtitles", srt_file, force_style=sub_style)
 
         # Audio: Input voiceover
         a_stream = ffmpeg.input(audio_file)

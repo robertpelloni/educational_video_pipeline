@@ -13,7 +13,7 @@ from src.tiktok_publisher import upload_video as tiktok_upload
 from src.instagram_publisher import upload_video as instagram_upload
 from src.twitter_publisher import upload_video as twitter_upload
 from src.ingestion_engine import fetch_wikipedia_summary
-from src.llm_engine import generate_script_from_text
+from src.llm_engine import generate_script_from_text, compose_scene_visual_prompt
 from src.analytics_engine import fetch_platform_analytics
 from src.image_engine import generate_image_from_prompt
 
@@ -70,7 +70,7 @@ celery_app = Celery("video_pipeline", broker=redis_url, backend=redis_url)
 
 @celery_app.task(name="run_video_pipeline_task", soft_time_limit=300, time_limit=360)
 @async_queue_wrapper
-def run_pipeline_task(topic: str, skip_upload: bool):
+def run_pipeline_task(topic: str, skip_upload: bool, style_preset: str = None):
     """
     Executes the end-to-end video pipeline as a distributed Celery task.
     Implements a 5 minute soft timeout to catch FFmpeg hanging processes safely.
@@ -90,7 +90,10 @@ def run_pipeline_task(topic: str, skip_upload: bool):
 
     # 1c. LLM Structure with Feedback Loop
     config = generate_script_from_text(
-        raw_text, project_id=project_id, analytics_feedback=feedback_summary
+        raw_text,
+        project_id=project_id,
+        analytics_feedback=feedback_summary,
+        style_preset=style_preset,
     )
     jsonschema.validate(instance=config, schema=SCHEMA)
 
@@ -99,11 +102,18 @@ def run_pipeline_task(topic: str, skip_upload: bool):
     for scene in config.get("scenes", []):
         image_path = scene.get("image_path")
         if image_path and not os.path.exists(image_path):
-            prompt = (
-                scene.get("visual_prompt")
-                or f"Educational illustration regarding: {scene.get('text')}"
+            composite_prompt = compose_scene_visual_prompt(
+                scene, config.get("visual_style_anchor")
             )
-            generate_image_from_prompt(prompt, image_path)
+            negative_prompt = scene.get("negative_prompt") or config.get(
+                "negative_prompt"
+            )
+            generate_image_from_prompt(
+                composite_prompt,
+                image_path,
+                negative_prompt=negative_prompt,
+                style_anchor=None,
+            )
 
     # 2: Generate TTS audio clips
     logger.info("Checking and generating voiceovers...")

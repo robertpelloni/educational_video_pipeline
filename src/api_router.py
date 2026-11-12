@@ -58,6 +58,9 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 class GenerateRequest(BaseModel):
     topic: str = Field(default="Random Educational Topic")
     skip_upload: bool = Field(default=True)
+    style_preset: Optional[str] = Field(default=None)
+    canvas_format: Optional[List[str]] = Field(default=None)
+    platforms: Optional[List[str]] = Field(default=None)
 
     @field_validator("topic", mode="before")
     def validate_topic(cls, v: Any) -> str:
@@ -91,7 +94,9 @@ async def generate_video(
     topic_clean = payload.topic.strip()
 
     # Dispatch the job to the distributed Celery queue
-    task = run_pipeline_task.delay(topic_clean, payload.skip_upload)
+    task = run_pipeline_task.delay(
+        topic_clean, payload.skip_upload, payload.style_preset
+    )
 
     return {
         "status": "success",
